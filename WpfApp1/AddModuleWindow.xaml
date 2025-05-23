@@ -1,0 +1,50 @@
+﻿<Window x:Class="WpfApp1.AddModuleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Добавление модуля" WindowStartupLocation="CenterOwner"
+        Width="600" Height="500" Icon="/logo2.png">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Название модуля -->
+        <Label Content="Название модуля:" Grid.Row="0"/>
+        <TextBox x:Name="txtTitle" Grid.Row="0" Margin="0,30,0,0" Height="25"/>
+
+        <!-- Описание модуля -->
+        <Label Content="Описание модуля:" Grid.Row="1" Margin="0,10,0,0"/>
+        <TextBox x:Name="txtDescription" Grid.Row="1" Margin="0,30,0,0" 
+                 Height="100" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+        <!-- Элементы модуля -->
+        <Label Content="Элементы модуля:" Grid.Row="2" Margin="0,10,0,0"/>
+        <ListBox x:Name="lstItems" Grid.Row="2" Margin="0,30,0,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding ItemType}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Кнопки управления элементами -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+            <Button x:Name="btnAddItem" Content="Добавить" Width="100" Margin="5" Click="btnAddItem_Click"/>
+            <Button x:Name="btnEditItem" Content="Редактировать" Width="100" Margin="5" Click="btnEditItem_Click"/>
+            <Button x:Name="btnDeleteItem" Content="Удалить" Width="100" Margin="5" Click="btnDeleteItem_Click"/>
+        </StackPanel>
+
+        <!-- Кнопки сохранения/отмены -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="btnCancel" Content="Отмена" Width="100" Margin="5" Click="btnCancel_Click"/>
+            <Button x:Name="btnSave" Content="Сохранить" Width="100" Margin="5" Click="btnSave_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

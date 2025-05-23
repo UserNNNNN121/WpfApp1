@@ -1,0 +1,47 @@
+{
+  "course": {
+    "title": "Название курса",
+    "description": "Краткое описание курса"
+  },
+  "modules": [
+    {
+      "id": 1,
+      "title": "Название модуля 1",
+      "items": [
+        {
+          "type": "lecture",
+          "title": "Лекция 1",
+          "file": "Module1/lecture1.txt"
+        },
+        {
+          "type": "video",
+          "title": "Обучающий видео-материал 1",
+          "file": "Module1/video1.mp4",
+          "duration": 15
+        },
+        {
+          "type": "test",
+          "title": "Тест 1",
+          "file": "Module1/test1.json"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Название модуля 2",
+      "items": [
+        {
+          "type": "lecture",
+          "title": "Лекция 2",
+          "file": "Module2/lecture2.txt"
+        },
+        {
+          "type": "video",
+          "title": "Обучающий видео-материал 2",
+          "file": "Module2/video2.mp4",
+          "duration": 20
+        }
+      ]
+    }
+  ]
+}

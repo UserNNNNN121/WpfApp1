@@ -1,0 +1,116 @@
+﻿<Window x:Class="WpfApp1.CreateTestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Создание теста" Height="600" Width="800" Icon="/logo2.png">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+
+        <GroupBox Grid.Row="0" Header="Настройки теста">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Всего баллов:"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtTotalPoints" Text="100" Margin="5"/>
+                </Grid>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Question Creation -->
+        <GroupBox Grid.Row="1" Header="Создание вопроса">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Текст вопроса:" Grid.Column="0"/>
+                    <TextBox x:Name="txtQuestionText" Grid.Column="1" Margin="5"/>
+
+                    <Label Content="Тип:" Grid.Column="2"/>
+                    <ComboBox x:Name="cmbQuestionType" Grid.Column="3" Margin="5" Width="100"
+                              SelectionChanged="cmbQuestionType_SelectionChanged"/>
+
+                    <Label Content="Баллы:" Grid.Column="3" Grid.ColumnSpan="2" Margin="237,0,55,0"/>
+                    <TextBox x:Name="txtQuestionPoints" Grid.Column="5" Text="1" Margin="5" Width="50"/>
+                </Grid>
+
+                <Button x:Name="btnAddQuestion" Content="Добавить вопрос" Click="btnAddQuestion_Click" Margin="0,5,0,0"/>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Questions and Answers -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Questions List -->
+            <GroupBox Grid.Column="0" Header="Вопросы">
+                <DockPanel>
+                    <Button x:Name="btnRemoveQuestion" Content="Удалить вопрос" DockPanel.Dock="Bottom" 
+                            Margin="5" Click="btnRemoveQuestion_Click"/>
+                    <ListBox x:Name="lstQuestions" DisplayMemberPath="Text" SelectionChanged="lstQuestions_SelectionChanged"/>
+                </DockPanel>
+            </GroupBox>
+
+            <!-- Answers List -->
+            <GroupBox Grid.Column="1" Header="Ответы">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="txtAnswerText" Grid.Column="0"/>
+                            <CheckBox x:Name="chkIsCorrect" Grid.Column="1" Content="Правильный" Margin="5,0,0,0"/>
+                        </Grid>
+                        <Button x:Name="btnAddAnswer" Content="Добавить ответ" Click="btnAddAnswer_Click" Margin="0,5,0,0"/>
+                    </StackPanel>
+
+                    <Button x:Name="btnRemoveAnswer" Content="Удалить ответ" DockPanel.Dock="Bottom" 
+                            Margin="5" Click="btnRemoveAnswer_Click"/>
+                    <ListBox x:Name="lstAnswers">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Text}"/>
+                                    <TextBlock Text=" (правильный)" Foreground="Green" Margin="5,0,0,0"
+                                               Visibility="{Binding IsCorrect, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </GroupBox>
+        </Grid>
+
+        <!-- Save/Cancel -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="btnCancel" Content="Отмена" Width="80" Margin="5" Click="btnCancel_Click"/>
+            <Button x:Name="btnSave" Content="Сохранить" Width="80" Margin="5" Click="btnSave_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

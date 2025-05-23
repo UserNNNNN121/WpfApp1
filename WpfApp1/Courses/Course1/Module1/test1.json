@@ -1,0 +1,40 @@
+{
+    "Id": 1,
+    "Title": "Тест по модулю 1",
+    "PassingScore": 70,
+    "TimeLimitMinutes": 30,
+    "Questions": [
+        {
+            "Text": "Вопрос №1",
+            "Type": "single",
+            "Points": 1,
+            "Answers": [
+                {"Text": "Правильный ответ", "IsCorrect": true},
+                {"Text": "Неправильный ответ", "IsCorrect": false},
+                {"Text": "Неправильный ответ", "IsCorrect": false}
+            ]
+        },
+        {
+            "Text": "Вопрос №2",
+            "Type": "multiple",
+            "Points": 2,
+            "Answers": [
+                {"Text": "Правильный ответ", "IsCorrect": true},
+                {"Text": "Правильный ответ", "IsCorrect": true},
+                {"Text": "Неправильный ответ", "IsCorrect": false},
+                {"Text": "Неправильный ответ", "IsCorrect": false}
+            ]
+        },
+        {
+            "Text": "Вопрос №3",
+            "Type": "text",
+            "Points": 3,
+            "Answers": [
+                {"Text": "Правильный ответ", "IsCorrect": true},
+                {"Text": "Правильный ответ", "IsCorrect": true},
+                {"Text": "Неправильный ответ", "IsCorrect": false},
+                {"Text": "Неправильный ответ", "IsCorrect": false}
+            ]
+        }
+    ]
+}

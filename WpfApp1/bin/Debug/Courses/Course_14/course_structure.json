@@ -1,0 +1,39 @@
+{
+  "course": {
+    "title": "Название Курса 1",
+    "description": "Описание Курса 1"
+  },
+  "modules": [
+    {
+      "id": 1,
+      "title": "Названия Модуля 1",
+      "description": "Описание Модуля 1",
+      "items": [
+        {
+          "type": "lecture",
+          "title": "Лекция 1",
+          "duration": null,
+          "content_in_db": true
+        },
+        {
+          "type": "lecture",
+          "title": "Лекция 2",
+          "duration": null,
+          "content_in_db": true
+        },
+        {
+          "type": "test",
+          "title": "Тест 1",
+          "duration": null,
+          "content_in_db": true
+        },
+        {
+          "type": "video",
+          "title": "Видео 1",
+          "duration": 5,
+          "content_in_db": true
+        }
+      ]
+    }
+  ]
+}

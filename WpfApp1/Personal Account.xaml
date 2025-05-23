@@ -1,0 +1,154 @@
+﻿<Window x:Class="WpfApp1.Personal_Account"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        Title="Enterprice Courses" Height="1040" Width="1980" ResizeMode="CanResizeWithGrip" Icon="/logo2.png">
+
+    <Window.Resources>
+        <Style x:Key="BottomButtonStyle" TargetType="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="LightGray"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="2,5"/>
+            <Setter Property="TextBlock.TextWrapping" Value="Wrap"/>
+            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="5,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center" 
+                                        RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="DarkGray"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="Gray"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Panel.ZIndex="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Image Source="/logo.png"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Center"
+               Height="51"
+               Width="76"
+               Grid.Column="0"
+               Margin="14,0,0,0"
+               Cursor="Hand"
+               MouseLeftButtonDown="btnMain_Click"/>
+                <UniformGrid Grid.Column="1" Rows="1">
+                    <Button x:Name="btnFAQs" Content="FAQs"
+        Style="{StaticResource BottomButtonStyle}"
+ Margin="2,5" Click="btnFAQs_Click"/>
+
+                    <Button x:Name="btnMain" Content="Главная"
+        Style="{StaticResource BottomButtonStyle}"
+ Margin="2,5" Click="btnMain_Click"/>
+
+                    <Button x:Name="btnAccount" Content="Личный кабинет"
+        Style="{StaticResource BottomButtonStyle}"
+ Margin="2,5" Click="btnAccount_Click"/>
+
+                    <Button x:Name="btnSupport" Content="Служба поддержки"
+        Style="{StaticResource BottomButtonStyle}"
+ Margin="2,5" Click="btnSupport_Click"/>
+
+                    <Button x:Name="btnAdmin" Content="Кабинет администратора"
+        Style="{StaticResource BottomButtonStyle}"
+Margin="2,5" Click="btnAdmin_Click"
+        Visibility="Collapsed"/>
+                </UniformGrid>
+            </Grid>
+        </Grid>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="False" Grid.Row="1" >
+
+            <Grid Height="926">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="169*"/>
+                    <ColumnDefinition Width="1811*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="txtName" TextWrapping="Wrap" Text="ФИО: " FontSize="36" Margin="83,172,801,704" Grid.ColumnSpan="2"/>
+                <TextBlock x:Name="txtSpeciality" TextWrapping="Wrap" Text="Специальность: " FontSize="36" Margin="83,220,801,656" Grid.ColumnSpan="2"/>
+
+                <TextBlock x:Name="txtStartedCourses" Text="Начатые курсы:" FontSize="36" Margin="83,288,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.ColumnSpan="2"/>
+                <ScrollViewer x:Name="startedCoursesCarousel"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Disabled"
+              Margin="83,342,0,0"
+              Height="120"
+              VerticalAlignment="Top" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="800">
+                    <StackPanel x:Name="startedCoursesPanel" Orientation="Horizontal"/>
+                </ScrollViewer>
+
+                <TextBlock x:Name="txtCompletedCourses" Text="Завершенные курсы:" FontSize="36" Margin="83,472,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.ColumnSpan="2"/>
+                <ScrollViewer x:Name="completedCoursesCarousel"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Disabled"
+              Margin="83,522,0,0"
+              Height="120"
+              VerticalAlignment="Top"
+              HorizontalAlignment="Left"
+              Width="800" Grid.ColumnSpan="2">
+                    <StackPanel x:Name="completedCoursesPanel" Orientation="Horizontal"/>
+                </ScrollViewer>
+
+                <TextBlock x:Name="txtCertificates" Text="Сертификаты:" FontSize="36" Margin="83,662,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.ColumnSpan="2"/>
+                <ScrollViewer x:Name="certificatesCarousel"
+              HorizontalScrollBarVisibility="Auto"
+              VerticalScrollBarVisibility="Disabled"
+              Margin="83,712,0,0"
+              Height="180"
+              VerticalAlignment="Top"
+              HorizontalAlignment="Left"
+              Width="800" Grid.ColumnSpan="2">
+                    <StackPanel x:Name="certificatesCarouselItems" Orientation="Horizontal"/>
+                </ScrollViewer>
+
+                <Label Content="Личный Кабинет" FontSize="36" HorizontalAlignment="Left" Margin="677,84,0,759" Grid.Column="1"/>
+
+                <Label Content="Смена пароля:" FontSize="36" HorizontalAlignment="Left" Margin="1180,167,0,695" Grid.Column="1"/>
+                <Label Content="Введите предыдущий пароль:" FontSize="30" HorizontalAlignment="Left" Margin="1180,236,0,624" Grid.Column="1"/>
+                <PasswordBox x:Name="boxPassword" FontSize="36" Margin="1187,302,112,568" Grid.Column="1"/>
+                <Button x:Name="btnChange" Content="Сменить пароль" FontSize="30" Height="68" Width="230" Margin="1187,394,394,464" RenderTransformOrigin="0.477,0.613" Click="btnChange_Click" Grid.Column="1"/>
+            </Grid>
+        </ScrollViewer>
+        <Button x:Name="btnExit" Content="Выйти"
+                Style="{StaticResource BottomButtonStyle}"
+                Grid.Row="1" Margin="0,913,15,10" Height="NaN"
+                Click="btnExit_Click" HorizontalAlignment="Right" MinWidth="100" VerticalAlignment="Stretch" Width="100"/>
+    </Grid>
+</Window>

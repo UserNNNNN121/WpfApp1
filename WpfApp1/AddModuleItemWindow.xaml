@@ -1,0 +1,44 @@
+﻿<Window x:Class="WpfApp1.AddModuleItemWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Module Item" Height="300" Width="400" Icon="/logo2.png">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Label Content="Название:" Grid.Row="0"/>
+        <TextBox x:Name="txtTitle" Grid.Row="1" Margin="0,0,0,10"/>
+
+        <Label Content="Тип:" Grid.Row="2"/>
+        <ComboBox x:Name="cmbItemType" Grid.Row="3" Margin="0,0,0,10"
+                  SelectionChanged="cmbItemType_SelectionChanged"/>
+
+        <StackPanel Grid.Row="4" Orientation="Vertical">
+            <Label x:Name="lblDuration" Content="Продолжительность (мин):" Visibility="Collapsed"/>
+            <TextBox x:Name="txtDuration" Visibility="Collapsed" Margin="0,0,0,10"/>
+
+            <Label Content="Загрузить:"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="txtFilePath" IsReadOnly="True"/>
+                <Button x:Name="btnBrowse" Content="Browse..." Grid.Column="1" 
+                        Click="btnBrowse_Click" Margin="5,0,0,0"/>
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="btnCancel" Content="Отмена" Width="80" Margin="0,0,10,0"
+                    Click="btnCancel_Click"/>
+            <Button x:Name="btnSave" Content="Сохранить" Width="80" Click="btnSave_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

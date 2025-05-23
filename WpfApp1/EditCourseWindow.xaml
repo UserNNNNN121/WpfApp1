@@ -1,0 +1,37 @@
+﻿<Window x:Class="WpfApp1.EditCourseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        Title="Расширенное редактирование курса" Height="600" Width="800" Icon="/logo2.png">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" Content="Название курса:" FontWeight="Bold"/>
+        <TextBox Grid.Row="0" Margin="0,0,0,10" Name="txtTitle" Text="{Binding Title}"/>
+
+        <Label Grid.Row="1" Content="Описание курса:" FontWeight="Bold"/>
+        <TextBox Grid.Row="1" Margin="0,0,0,10" Name="txtDescription" TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+            <Button Content="Добавить модуль" Margin="5" Padding="10,5" Click="btnAddModule_Click"/>
+            <Button Content="Редактировать модуль" Margin="5" Padding="10,5" Click="btnEditModule_Click"/>
+            <Button Content="Удалить модуль" Margin="5" Padding="10,5" Click="btnDeleteModule_Click"/>
+        </StackPanel>
+
+        <ListBox Grid.Row="3" Name="lstModules" DisplayMemberPath="Title" Margin="0,0,0,10"/>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Сохранить" Margin="5" Padding="20,5" Click="btnSave_Click"/>
+            <Button Content="Отмена" Margin="5" Padding="20,5" Click="btnCancel_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
