@@ -13,14 +13,21 @@ namespace WpfApp1
         public byte[] SealImage { get; private set; }
         public byte[] SignatureImage { get; private set; }
         public bool EnableCertificate => chkEnableCertificate.IsChecked ?? false;
-
+        /// <summary>
+        /// Конструктор окна настроек сертификата.
+        /// Принимает идентификатор курса и загружает существующие настройки сертификата.
+        /// </summary>
+        /// <param name="courseId">Идентификатор курса</param>
         public CertificateSettingsWindow(int courseId)
         {
             InitializeComponent();
             _courseId = courseId;
             LoadSettings();
         }
-
+        /// <summary>
+        /// Загружает сохранённые настройки сертификата из генератора.
+        /// Если изображения печати и подписи существуют — отображает их в интерфейсе.
+        /// </summary>
         private void LoadSettings()
         {
             var generator = new CertificateGenerator();
@@ -50,7 +57,12 @@ namespace WpfApp1
             }
         }
 
-
+        /// <summary>
+        /// Обработчик кнопки выбора шаблона сертификата.
+        /// Открывает диалог выбора PDF-файла и сохраняет его в TemplatePdf.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnSelectTemplate_Click(object sender, RoutedEventArgs e)
         {
             var openDialog = new OpenFileDialog
@@ -65,7 +77,12 @@ namespace WpfApp1
                 txtTemplatePath.Text = openDialog.FileName;
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки добавления изображения печати.
+        /// Загружает PNG-изображение и отображает его в интерфейсе.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnAddSeal_Click(object sender, RoutedEventArgs e)
         {
             var openDialog = new OpenFileDialog
@@ -84,7 +101,12 @@ namespace WpfApp1
                 imgSeal.Source = bitmap;
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки добавления изображения подписи.
+        /// Загружает PNG-изображение и отображает его в интерфейсе.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnAddSignature_Click(object sender, RoutedEventArgs e)
         {
             var openDialog = new OpenFileDialog
@@ -103,7 +125,12 @@ namespace WpfApp1
                 imgSignature.Source = bitmap;
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки сохранения.
+        /// Проверяет наличие PDF-шаблона, сохраняет настройки сертификата и закрывает окно с положительным результатом.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             if (TemplatePdf == null)
@@ -122,7 +149,12 @@ namespace WpfApp1
             DialogResult = true;
             Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки отмены.
+        /// Закрывает окно без сохранения изменений.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;

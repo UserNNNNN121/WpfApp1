@@ -13,14 +13,20 @@ namespace WpfApp1
     {
         private static readonly string ConnectionString =
             $"Data Source={System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "educatingsystem.sl3")};Version=3;";
-
+        /// <summary>
+        /// Конструктор главного окна MainWindow.
+        /// Инициализирует компоненты и подписывается на обновление доступности курсов.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
             CourseAvailabilityManager.CoursesAvailabilityUpdated += OnCoursesAvailabilityUpdated;
             this.Closed += (s, e) => CourseAvailabilityManager.CoursesAvailabilityUpdated -= OnCoursesAvailabilityUpdated;
         }
-
+        /// <summary>
+        /// Обработчик события обновления доступности курсов.
+        /// Показывает уведомление пользователю о возможных изменениях.
+        /// </summary>
         private void OnCoursesAvailabilityUpdated()
         {
             Dispatcher.Invoke(() =>
@@ -31,7 +37,10 @@ namespace WpfApp1
                               MessageBoxImage.Information);
             });
         }
-
+        /// <summary>
+        /// Копирует свойства текущего окна (размер, положение, состояние) в новое окно.
+        /// </summary>
+        /// <param name="nextWindow">Окно, к которому применяются свойства</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -40,7 +49,12 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода к окну выбора роли (регистрация).
+        /// Открывает новое окно и закрывает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnReg_Click(object sender, RoutedEventArgs e)
         {
             Window registr = new Role();
@@ -48,7 +62,12 @@ namespace WpfApp1
             registr.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки возвращения на главное окно.
+        /// Перезапускает MainWindow.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             Window mainWindow = new MainWindow();
@@ -56,7 +75,12 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода в окно поддержки.
+        /// Открывает окно Support с параметрами по умолчанию.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(false, -1);
@@ -64,7 +88,12 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода к часто задаваемым вопросам (FAQ).
+        /// Открывает окно FAQs.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(false, -1);
@@ -72,7 +101,12 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки восстановления доступа.
+        /// Открывает окно PasswordRecovery.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccessRecovery_Click(object sender, RoutedEventArgs e)
         {
             Window recovery = new PasswordRecovery(false, -1);
@@ -80,7 +114,12 @@ namespace WpfApp1
             recovery.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки показа/скрытия пароля.
+        /// Переключает между PasswordBox и TextBox, отображая или скрывая пароль.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnTogglePassword_Click(object sender, RoutedEventArgs e)
         {
             if (passwBox.Visibility == Visibility.Visible)
@@ -98,7 +137,12 @@ namespace WpfApp1
                 imgPasswordIcon.Source = new BitmapImage(new Uri("/hideeye.png", UriKind.Relative));
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки входа в систему.
+        /// Проверяет введенные логин и пароль, выполняет вход как администратор или пользователь.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSignUp_Click(object sender, RoutedEventArgs e)
         {
             string login = boxLogin.Text;
@@ -163,7 +207,12 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Личный кабинет".
+        /// Показывает сообщение об ошибке, если пользователь не авторизован.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(

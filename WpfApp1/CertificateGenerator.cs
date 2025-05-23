@@ -18,7 +18,19 @@ namespace WpfApp1
     {
         private static readonly string connectionString =
             $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "educatingsystem.sl3")};Version=3;";
-
+        /// <summary>
+        /// Генерирует сертификат на основе PDF-шаблона, пользовательских данных и изображений.
+        /// Заполняет форму, добавляет изображения, делает поля только для чтения.
+        /// </summary>
+        /// <param name="userName">Имя пользователя</param>
+        /// <param name="courseTitle">Название курса</param>
+        /// <param name="organisationName">Название организации</param>
+        /// <param name="templatePdf">PDF-шаблон сертификата</param>
+        /// <param name="sealImage">Изображение печати</param>
+        /// <param name="signatureImage">Изображение подписи</param>
+        /// <param name="certificateNumber">Номер сертификата</param>
+        /// <param name="completionDate">Дата завершения курса</param>
+        /// <returns>Сертификат в виде массива байт</returns>
         public byte[] GenerateCertificate(
             string userName,
             string courseTitle,
@@ -69,6 +81,16 @@ namespace WpfApp1
                 throw;
             }
         }
+        /// <summary>
+        /// Заполняет поля PDF-формы стандартными полями сертификата.
+        /// Устанавливает значения и делает поля доступными только для чтения.
+        /// </summary>
+        /// <param name="document">PDF-документ</param>
+        /// <param name="userName">Имя пользователя</param>
+        /// <param name="courseTitle">Название курса</param>
+        /// <param name="organisationName">Название организации</param>
+        /// <param name="certificateNumber">Номер сертификата</param>
+        /// <param name="completionDate">Дата завершения</param>
         private void FillFormFields(PdfDocument document,
                                     string userName,
                                     string courseTitle,
@@ -101,6 +123,10 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Устанавливает флаг поля PDF формы "только для чтения".
+        /// </summary>
+        /// <param name="field">Поле PDF</param>
         private void SetReadOnlyFlag(PdfTextField field)
         {
             const int ReadOnlyFlag = 1; 
@@ -117,7 +143,16 @@ namespace WpfApp1
             }
         }
 
-
+        /// <summary>
+        /// Ручное добавление текста в PDF-документ в случае отсутствия формы.
+        /// Используется при отсутствии AcroForm в шаблоне.
+        /// </summary>
+        /// <param name="document">PDF-документ</param>
+        /// <param name="userName">Имя пользователя</param>
+        /// <param name="courseTitle">Название курса</param>
+        /// <param name="organisationName">Название организации</param>
+        /// <param name="certificateNumber">Номер сертификата</param>
+        /// <param name="completionDate">Дата завершения</param>
         private void FillManually(PdfDocument document,
                         string userName,
                         string courseTitle,
@@ -138,7 +173,13 @@ namespace WpfApp1
             gfx.DrawString(completionDate.ToString("dd.MM.yyyy"), regularFont, XBrushes.Black, new XPoint(150, 370)); 
         }
 
-
+        /// <summary>
+        /// Добавляет изображения подписи и печати в соответствующие поля PDF.
+        /// При наличии изображения удаляет исходные поля Text8 и Text9.
+        /// </summary>
+        /// <param name="document">PDF-документ</param>
+        /// <param name="sealImage">Изображение печати</param>
+        /// <param name="signatureImage">Изображение подписи</param>
         private void AddImages(PdfDocument document, byte[] sealImage, byte[] signatureImage)
         {
             var page = document.Pages[0];
@@ -146,7 +187,6 @@ namespace WpfApp1
 
             var fields = document.AcroForm?.Fields;
 
-            // Подпись -> Text8
             if (signatureImage != null && fields["Text8"] is PdfTextField signatureField)
             {
                 var rect = signatureField.Elements.GetRectangle("/Rect");
@@ -164,7 +204,6 @@ namespace WpfApp1
                     gfx.DrawImage(signature, x, y, width, height);
                 }
 
-                // Удаление поля Text8
                 RemoveFieldManually(document, "Text8");
             }
 
@@ -185,13 +224,17 @@ namespace WpfApp1
                     gfx.DrawImage(seal, x, y, width, height);
                 }
 
-                // Удаление поля Text9
                 RemoveFieldManually(document, "Text9");
             }
         }
+        /// <summary>
+        /// Удаляет указанные поля формы вручную из документа PDF.
+        /// Удаление происходит из AcroForm и аннотаций страниц.
+        /// </summary>
+        /// <param name="document">PDF-документ</param>
+        /// <param name="fieldName">Имя поля формы</param>
         private void RemoveFieldManually(PdfDocument document, string fieldName)
         {
-            // Удаление из AcroForm.Fields
             var fieldsArray = document.AcroForm.Elements["/Fields"] as PdfArray;
             if (fieldsArray != null)
             {
@@ -208,7 +251,6 @@ namespace WpfApp1
                 }
             }
 
-            // Удаление из аннотаций на всех страницах
             foreach (var page in document.Pages)
             {
                 if (page.Elements.ContainsKey("/Annots"))
@@ -232,13 +274,16 @@ namespace WpfApp1
             }
         }
 
-
+        /// <summary>
+        /// Устанавливает все текстовые поля в PDF-документе как "только для чтения".
+        /// Безопасно обрабатывает исключения при установке флагов.
+        /// </summary>
+        /// <param name="document">PDF-документ</param>
         private void MakeFieldsReadOnly(PdfDocument document)
         {
             if (document.AcroForm == null || document.AcroForm.Fields == null)
                 return;
 
-            // Безопасная обработка всех полей формы
             foreach (var field in document.AcroForm.Fields.OfType<PdfTextField>())
             {
                 try
@@ -247,12 +292,18 @@ namespace WpfApp1
                 }
                 catch
                 {
-                    // Пропускаем поля, которые не могут быть сделаны read-only
                     continue;
                 }
             }
         }
-
+        /// <summary>
+        /// Сохраняет шаблон сертификата, изображение печати и подписи в базу данных.
+        /// Заменяет или добавляет новую запись для указанного курса.
+        /// </summary>
+        /// <param name="courseId">ID курса</param>
+        /// <param name="templatePdf">Шаблон PDF</param>
+        /// <param name="sealImage">Изображение печати</param>
+        /// <param name="signatureImage">Изображение подписи</param>
         public void SaveCertificateSettings(
             int courseId,
             byte[] templatePdf,
@@ -288,7 +339,11 @@ namespace WpfApp1
                 throw;
             }
         }
-
+        /// <summary>
+        /// Загружает данные сертификата из базы данных по идентификатору курса.
+        /// </summary>
+        /// <param name="courseId">ID курса</param>
+        /// <returns>Данные сертификата или null, если не найдено</returns>
         public CertificateData LoadCertificateSettings(int courseId)
         {
             try
@@ -334,13 +389,19 @@ namespace WpfApp1
             }
             return null;
         }
-
+        /// <summary>
+        /// Генерирует уникальный номер сертификата на основе GUID.
+        /// </summary>
+        /// <returns>Строка с номером сертификата</returns>
         public string GenerateCertificateNumber()
         {
             return Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
         }
     }
-
+    /// <summary>
+    /// Класс, содержащий данные сертификата, включая шаблон, изображения и идентификаторы.
+    /// Используется для загрузки и генерации сертификатов.
+    /// </summary>
     public class CertificateData
     {
         public string UserName { get; set; }

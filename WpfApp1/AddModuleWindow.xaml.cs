@@ -11,7 +11,11 @@ namespace WpfApp1
         private Module _module;
         private List<ModuleItem> _moduleItems;
         private List<Module> _existingModules;
-
+        /// <summary>
+        /// Конструктор окна добавления нового модуля.
+        /// Инициализирует компонент, список элементов модуля и список существующих модулей.
+        /// </summary>
+        /// <param name="existingModules">Список существующих модулей курса</param>
         public AddModuleWindow(List<Module> existingModules)
         {
             InitializeComponent();
@@ -20,12 +24,18 @@ namespace WpfApp1
             _existingModules = existingModules;
             this.Title = "Добавление нового модуля";
         }
-
+        /// <summary>
+        /// Конструктор окна редактирования существующего модуля.
+        /// Загружает данные модуля и его элементы, устанавливает значения в поля формы.
+        /// </summary>
+        /// <param name="module">Редактируемый модуль</param>
+        /// <param name="moduleItems">Список элементов модуля</param>
+        /// <param name="existingModules">Список существующих модулей курса</param>
         public AddModuleWindow(Module module, List<ModuleItem> moduleItems, List<Module> existingModules)
         {
             InitializeComponent();
             _module = module;
-            _moduleItems = new List<ModuleItem>(moduleItems); // Create a new list with the same items
+            _moduleItems = new List<ModuleItem>(moduleItems); 
             _existingModules = existingModules;
             this.Title = "Редактирование модуля";
 
@@ -33,6 +43,11 @@ namespace WpfApp1
             txtDescription.Text = module.Description;
             lstItems.ItemsSource = _moduleItems;
         }
+        /// <summary>
+        /// Возвращает объект модуля с актуальными данными из формы.
+        /// Обновляет название, описание и порядковый индекс модуля.
+        /// </summary>
+        /// <returns>Объект модуля</returns>
         public Module GetModule()
         {
             _module.Title = txtTitle.Text;
@@ -40,12 +55,20 @@ namespace WpfApp1
             _module.OrderIndex = _moduleItems.Count > 0 ? _moduleItems.Max(i => i.OrderIndex) + 1 : 1;
             return _module;
         }
-
+        /// <summary>
+        /// Возвращает текущий список элементов модуля.
+        /// </summary>
+        /// <returns>Список элементов модуля</returns>
         public List<ModuleItem> GetModuleItems()
         {
             return _moduleItems;
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки добавления элемента.
+        /// Открывает окно создания нового элемента и добавляет его в список при подтверждении.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAddItem_Click(object sender, RoutedEventArgs e)
         {
             var itemWindow = new AddModuleItemWindow();
@@ -57,7 +80,12 @@ namespace WpfApp1
                 RefreshItemsList();
             }
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки редактирования элемента.
+        /// Открывает окно редактирования выбранного элемента и обновляет его данные после сохранения.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnEditItem_Click(object sender, RoutedEventArgs e)
         {
             if (lstItems.SelectedItem is ModuleItem selectedItem)
@@ -65,7 +93,6 @@ namespace WpfApp1
                 var itemWindow = new AddModuleItemWindow(selectedItem) { Owner = this };
                 if (itemWindow.ShowDialog() == true)
                 {
-                    // Не удаляем сразу элемент, а ждем подтверждения сохранения всего модуля
                     var updatedItem = itemWindow.GetModuleItem();
                     selectedItem.Title = updatedItem.Title;
                     selectedItem.ItemType = updatedItem.ItemType;
@@ -77,7 +104,12 @@ namespace WpfApp1
             }
         }
 
-
+        /// <summary>
+        /// Обработчик нажатия кнопки удаления элемента.
+        /// Удаляет выбранный элемент из списка после подтверждения пользователя.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnDeleteItem_Click(object sender, RoutedEventArgs e)
         {
             if (lstItems.SelectedItem is ModuleItem selectedItem)
@@ -89,12 +121,22 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Обновляет отображение списка элементов модуля в интерфейсе.
+        /// Используется после добавления, удаления или изменения элемента.
+        /// </summary>
         private void RefreshItemsList()
         {
             lstItems.ItemsSource = null;
             lstItems.ItemsSource = _moduleItems;
         }
+        /// <summary>
+        /// Проверяет наличие элемента с заданным названием в текущем списке элементов модуля.
+        /// Учитывает, что текущий редактируемый элемент может быть пропущен из проверки.
+        /// </summary>
+        /// <param name="title">Название элемента</param>
+        /// <param name="currentItem">Текущий элемент (может быть null)</param>
+        /// <returns>True, если элемент с таким названием уже существует</returns>
         public bool ItemTitleExists(string title, ModuleItem currentItem = null)
         {
             return _moduleItems.Any(i =>
@@ -103,7 +145,13 @@ namespace WpfApp1
         }
 
 
-
+        /// <summary>
+        /// Обработчик нажатия кнопки "Сохранить".
+        /// Проверяет корректность ввода, уникальность названий модуля и его элементов.
+        /// Закрывает окно с положительным результатом при успешной проверке.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtTitle.Text))
@@ -112,7 +160,6 @@ namespace WpfApp1
                 return;
             }
 
-            // Check for duplicate module names in the same course
             if (_existingModules != null && _existingModules.Any(m =>
                 m.Title.Equals(txtTitle.Text, StringComparison.OrdinalIgnoreCase) &&
                 m.Id != _module.Id))
@@ -127,7 +174,6 @@ namespace WpfApp1
                 return;
             }
 
-            // Проверка на дубликаты названий элементов
             var duplicateItems = _moduleItems
                 .GroupBy(i => i.Title.ToLower())
                 .Where(g => g.Count() > 1)
@@ -143,6 +189,12 @@ namespace WpfApp1
             this.DialogResult = true;
             this.Close();
         }
+        /// <summary>
+        /// Обработчик нажатия кнопки "Отмена".
+        /// Закрывает окно без сохранения изменений.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;

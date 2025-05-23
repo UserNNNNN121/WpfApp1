@@ -11,13 +11,15 @@ namespace WpfApp1
     public partial class AddModuleItemWindow : Window
     {
         private ModuleItem _moduleItem;
-
+        /// <summary>
+        /// Конструктор окна добавления нового элемента модуля.
+        /// Инициализирует компоненты, очищает и заполняет выпадающий список типов элементов.
+        /// </summary>
         public AddModuleItemWindow()
         {
             InitializeComponent();
             _moduleItem = new ModuleItem();
 
-            // Clear any existing items and set allowed values
             cmbItemType.Items.Clear();
             cmbItemType.Items.Add("lecture");
             cmbItemType.Items.Add("video");
@@ -26,38 +28,43 @@ namespace WpfApp1
             cmbItemType.SelectedIndex = 0;
             this.Title = "Добавление элемента модуля";
         }
-
+        /// <summary>
+        /// Конструктор окна редактирования элемента модуля.
+        /// Загружает данные существующего элемента и отображает их в соответствующих полях.
+        /// </summary>
+        /// <param name="item">Существующий элемент модуля для редактирования</param>
         public AddModuleItemWindow(ModuleItem item)
         {
             InitializeComponent();
             _moduleItem = item;
             this.Title = "Редактирование элемента модуля";
 
-            // Clear any existing items and set allowed values
             cmbItemType.Items.Clear();
             cmbItemType.Items.Add("lecture");
             cmbItemType.Items.Add("video");
             cmbItemType.Items.Add("test");
 
-            // Fill the fields
             txtTitle.Text = item.Title;
 
-            // Set the selected item (must match exactly, case-sensitive)
-            cmbItemType.SelectedItem = item.ItemType?.ToLower(); // Ensure lowercase
+            cmbItemType.SelectedItem = item.ItemType?.ToLower();
 
             txtFilePath.Text = item.ContentPath;
             txtDuration.Text = item.DurationMinutes?.ToString();
         }
-
+        /// <summary>
+        /// Возвращает объект ModuleItem, заполненный на основе данных, введенных пользователем.
+        /// Производит валидацию типа элемента и продолжительности видео.
+        /// </summary>
+        /// <returns>Объект ModuleItem</returns>
         public ModuleItem GetModuleItem()
         {
             _moduleItem.Title = txtTitle.Text;
 
-            // Ensure valid item type
+
             var selectedType = cmbItemType.SelectedItem?.ToString()?.ToLower();
             _moduleItem.ItemType = new[] { "lecture", "video", "test" }.Contains(selectedType)
                 ? selectedType
-                : "lecture"; // Default value
+                : "lecture"; 
 
             _moduleItem.ContentPath = txtFilePath.Text;
 
@@ -73,8 +80,13 @@ namespace WpfApp1
             return _moduleItem;
         }
 
-        // In AddModuleItemWindow.xaml.cs, modify the btnBrowse_Click method for test type
-        // В AddModuleItemWindow.xaml.cs изменяем метод btnBrowse_Click для теста
+        /// <summary>
+        /// Обработчик нажатия кнопки "Обзор".
+        /// В зависимости от выбранного типа элемента открывает окно создания теста
+        /// или диалог выбора файла (текст или видео).
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnBrowse_Click(object sender, RoutedEventArgs e)
         {
             if (cmbItemType.SelectedValue.ToString() == "test")
@@ -91,7 +103,6 @@ namespace WpfApp1
                 return;
             }
 
-            // Остальной код для lecture и video остается без изменений
             var openFileDialog = new OpenFileDialog();
             switch (cmbItemType.SelectedValue.ToString())
             {
@@ -108,6 +119,12 @@ namespace WpfApp1
                 txtFilePath.Text = openFileDialog.FileName;
             }
         }
+        /// <summary>
+        /// Обработчик изменения выбранного значения в выпадающем списке типов элементов.
+        /// Показывает или скрывает поле длительности в зависимости от типа "video".
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void cmbItemType_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (cmbItemType.SelectedValue != null)
@@ -118,7 +135,13 @@ namespace WpfApp1
                     Visibility.Visible : Visibility.Collapsed;
             }
         }
-        // Modified AddModuleItemWindow.xaml.cs
+        /// <summary>
+        /// Обработчик нажатия кнопки "Сохранить".
+        /// Валидирует введенные данные, проверяет уникальность названия,
+        /// проверяет корректность длительности для видео, закрывает окно при успешном вводе.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtTitle.Text))
@@ -127,7 +150,6 @@ namespace WpfApp1
                 return;
             }
 
-            // Проверка на уникальность названия элемента
             var parentWindow = Owner as AddModuleWindow;
             if (parentWindow != null && parentWindow.ItemTitleExists(txtTitle.Text, _moduleItem))
             {
@@ -145,6 +167,12 @@ namespace WpfApp1
             this.DialogResult = true;
             this.Close();
         }
+        /// <summary>
+        /// Обработчик нажатия кнопки "Отмена".
+        /// Закрывает окно без сохранения данных.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;

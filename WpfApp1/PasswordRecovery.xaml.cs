@@ -25,7 +25,13 @@ namespace WpfApp1
         public int _userId;
         public bool _isAuthorized = true;
         private string _userEmailForSending = "";
-
+        /// <summary>
+        /// Конструктор окна восстановления пароля с передачей email пользователя
+        /// Устанавливает видимость элементов интерфейса и инициализирует таймер повторной отправки кода
+        /// </summary>
+        /// <param name="isAdmin">Флаг администратора</param>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="userEmail">Email пользователя</param>
         public PasswordRecovery(bool isAdmin, int userId, string userEmail)
         {
             InitializeComponent();
@@ -53,11 +59,16 @@ namespace WpfApp1
             UpdateSendCodeButtonState();
         }
 
+        /// <summary>
+        /// Перегруженный конструктор окна восстановления пароля без email
+        /// Получает email из базы данных на основе ID пользователя
+        /// </summary>
+        /// <param name="isAdmin">Флаг администратора</param>
+        /// <param name="userId">ID пользователя</param>
         public PasswordRecovery(bool isAdmin, int userId) : this(isAdmin, userId, "")
         {
             if (userId != -1)
             {
-                // Получаем email из соответствующей таблицы
                 string query = isAdmin
                     ? "SELECT email FROM administrators WHERE id = @id"
                     : "SELECT mail FROM users WHERE id = @id";
@@ -93,6 +104,10 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Применяет параметры текущего окна к новому окну (позиция, размер, состояние)
+        /// </summary>
+        /// <param name="nextWindow">Новое окно</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -101,7 +116,12 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода на главное окно
+        /// Осуществляется переход в зависимости от авторизации
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             if (_isAuthorized)
@@ -119,7 +139,12 @@ namespace WpfApp1
                 this.Close();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Назад"
+        /// Открывает окно входа (MainWindow)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();
@@ -127,7 +152,12 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки отправки кода восстановления
+        /// Генерирует код, отправляет его на email и запускает таймер
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnSendCode_Click(object sender, RoutedEventArgs e)
         {
             if (_codeResendTimer.IsRunning && _codeResendTimer.Elapsed.TotalSeconds < ResendDelaySeconds)
@@ -177,7 +207,12 @@ namespace WpfApp1
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        /// <summary>
+        /// Поиск пользователя в базе данных по логину или email
+        /// Проверяется сначала таблица пользователей, затем администраторов
+        /// </summary>
+        /// <param name="emailOrLogin">Email или логин</param>
+        /// <returns>True, если пользователь найден</returns>
         private bool FindUserInDatabase(string emailOrLogin)
         {
             try
@@ -226,7 +261,10 @@ namespace WpfApp1
                 return false;
             }
         }
-
+        /// <summary>
+        /// Обновляет состояние кнопки отправки кода с учётом таймера
+        /// Выводит обратный отсчет при блокировке повторной отправки
+        /// </summary>
         private void UpdateSendCodeButtonState()
         {
             if (_codeResendTimer.IsRunning && _codeResendTimer.Elapsed.TotalSeconds < ResendDelaySeconds)
@@ -259,7 +297,12 @@ namespace WpfApp1
                 btnSendCode.IsEnabled = true;
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки восстановления пароля
+        /// Проверяет введённый код и открывает окно смены пароля, если код верный
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnRestore_Click(object sender, RoutedEventArgs e)
         {
             string enteredCode = boxCode.Text.Trim();
@@ -285,7 +328,12 @@ namespace WpfApp1
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        /// <summary>
+        /// Генерация случайного числового кода заданной длины
+        /// Используется для восстановления пароля
+        /// </summary>
+        /// <param name="length">Длина кода</param>
+        /// <returns>Строка с кодом</returns>
         private string GenerateRandomCode(int length)
         {
             Random random = new Random();
@@ -299,7 +347,13 @@ namespace WpfApp1
 
             return new string(code);
         }
-
+        /// <summary>
+        /// Отправка email сообщения с использованием SMTP сервера
+        /// Используется для отправки кода восстановления
+        /// </summary>
+        /// <param name="toAddress">Email получателя</param>
+        /// <param name="subject">Тема письма</param>
+        /// <param name="body">Текст письма</param>
         private void SendEmail(string toAddress, string subject, string body)
         {
             try
@@ -336,7 +390,11 @@ namespace WpfApp1
                 throw;
             }
         }
-
+        /// <summary>
+        /// Проверка корректности email адреса
+        /// </summary>
+        /// <param name="email">Email строка</param>
+        /// <returns>True, если адрес корректен</returns>
         private bool IsValidEmail(string email)
         {
             try
@@ -349,7 +407,12 @@ namespace WpfApp1
                 return false;
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода в личный кабинет
+        /// Проверяется авторизация пользователя
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             if (_userId == -1)
@@ -368,6 +431,11 @@ namespace WpfApp1
                 this.Close();
             }
         }
+        /// <summary>
+        /// Обработчик кнопки перехода в административную панель
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnAdmin_Click(object sender, RoutedEventArgs e)
         {
             Window admin = new AdminControl(_isAdmin, _userId);
@@ -375,6 +443,11 @@ namespace WpfApp1
             admin.Show();
             this.Close();
         }
+        /// <summary>
+        /// Обработчик кнопки перехода к разделу "Часто задаваемые вопросы"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(_isAdmin, _userId);
@@ -382,7 +455,12 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки поддержки
+        /// Открывает окно поддержки
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(_isAdmin, _userId);
@@ -390,7 +468,12 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки выхода
+        /// Закрывает текущее окно и открывает окно входа
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();

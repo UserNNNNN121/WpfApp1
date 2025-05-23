@@ -24,7 +24,14 @@ namespace WpfApp1
         private TextBlock _scoreText;
         private static readonly string ConnectionString =
             $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "educatingsystem.sl3")};Version=3;";
-
+        /// <summary>
+        /// Конструктор окна TestWindow
+        /// Инициализирует параметры, загружает вопросы и интерфейс
+        /// </summary>
+        /// <param name="testId">ID теста</param>
+        /// <param name="testTitle">Название теста</param>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="courseId">ID курса</param>
         public TestWindow(int testId, string testTitle, int userId, int courseId)
         {
             InitializeComponent();
@@ -43,7 +50,11 @@ namespace WpfApp1
             InitializeUI();
             ShowQuestion(0);
         }
-
+        /// <summary>
+        /// Загружает список вопросов и ответов из базы данных SQLite
+        /// Проверяет принадлежность теста курсу
+        /// </summary>
+        /// <returns>Список вопросов</returns>
         private List<QuestionViewModel> LoadQuestions()
         {
             var questions = new List<QuestionViewModel>();
@@ -52,7 +63,6 @@ namespace WpfApp1
             {
                 connection.Open();
 
-                // First verify this test belongs to the course
                 string verifyQuery = @"
             SELECT COUNT(*) 
             FROM tests t
@@ -73,7 +83,6 @@ namespace WpfApp1
                     }
                 }
 
-                // Load questions for this test
                 string questionsQuery = @"
             SELECT id, question_text, question_type, points, order_index 
             FROM test_questions 
@@ -98,7 +107,6 @@ namespace WpfApp1
                                 Answers = new List<AnswerViewModel>()
                             };
 
-                            // Load answers for this question
                             string answersQuery = @"
                         SELECT id, answer_text, is_correct, order_index 
                         FROM test_answers 
@@ -133,17 +141,19 @@ namespace WpfApp1
 
             return questions;
         }
+        /// <summary>
+        /// Инициализирует элементы пользовательского интерфейса окна теста
+        /// Создаёт сетку с областями вопросов и прогресса
+        /// </summary>
         private void InitializeUI()
         {
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(300) });
 
-            // Main question area
             var questionPanel = new StackPanel { Margin = new Thickness(20) };
             Grid.SetColumn(questionPanel, 0);
 
-            // Side progress panel
             var progressPanel = new Border
             {
                 Background = Brushes.LightGray,
@@ -157,7 +167,11 @@ namespace WpfApp1
 
             Content = grid;
         }
-
+        /// <summary>
+        /// Отображает вопрос по указанному индексу
+        /// Показывает текст, варианты ответов и навигационные элементы
+        /// </summary>
+        /// <param name="index">Индекс текущего вопроса</param>
         private void ShowQuestion(int index)
         {
             if (index < 0 || index >= _questions.Count) return;
@@ -174,7 +188,6 @@ namespace WpfApp1
             questionPanel.Children.Clear();
             progressStackPanel.Children.Clear();
 
-            // Question text
             var questionText = new TextBlock
             {
                 Text = currentQuestion.Text,
@@ -184,7 +197,6 @@ namespace WpfApp1
             };
             questionPanel.Children.Add(questionText);
 
-            // Answer options
             foreach (var answer in currentQuestion.Answers)
             {
                 if (currentQuestion.Type == "single")
@@ -259,7 +271,7 @@ namespace WpfApp1
 
                     questionPanel.Children.Add(checkBox);
                 }
-                else // text answer
+                else 
                 {
                     var textBox = new TextBox
                     {
@@ -295,7 +307,6 @@ namespace WpfApp1
                 }
             }
 
-            // Navigation panel
             var navigationPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -331,7 +342,6 @@ namespace WpfApp1
                     navigationPanel.Children.Add(finishButton);
                 }
 
-                // Correction button
                 var correctButton = new Button
                 {
                     Content = "Исправить",
@@ -349,7 +359,6 @@ namespace WpfApp1
 
             questionPanel.Children.Add(navigationPanel);
 
-            // Progress panel
             var progressText = new TextBlock
             {
                 Text = $"Прогресс: {index + 1}/{_questions.Count}",
@@ -374,19 +383,21 @@ namespace WpfApp1
             };
             progressStackPanel.Children.Add(_scoreText);
         }
-
+        /// <summary>
+        /// Обработчик завершения теста
+        /// Сохраняет результат и открывает окно с результатами
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private async void FinishTest(object sender, RoutedEventArgs e)
         {
             double percentage = (_totalScore * 100.0) / _maxScore;
 
-            // Save the test result
             await SaveTestResultAsync(percentage);
 
-            // Show result window
             var resultWindow = new TestResultWindow(_testTitle, _totalScore, _maxScore, percentage);
             resultWindow.Show();
 
-            // Refresh the test status in the parent window
             if (Owner is Course courseWindow)
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -398,6 +409,10 @@ namespace WpfApp1
             this.Close();
         }
 
+        /// <summary>
+        /// Получает ID элемента модуля, связанного с текущим тестом
+        /// </summary>
+        /// <returns>ID элемента модуля</returns>
         private int GetModuleItemIdForTest()
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -412,7 +427,12 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Обработчик отправки ответа на текущий вопрос
+        /// Проверяет правильность, обновляет баллы и отображение
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void SubmitAnswer(object sender, RoutedEventArgs e)
         {
             var currentQuestion = _questions[_currentQuestionIndex];
@@ -447,7 +467,7 @@ namespace WpfApp1
                     currentQuestion.IsFullyCorrect = true;
                 }
             }
-            else // text answer
+            else 
             {
                 if (currentQuestion.Answers.Any(a => a.IsSelected))
                 {
@@ -460,7 +480,11 @@ namespace WpfApp1
             _scoreText.Text = $"Баллы: {_totalScore}/{_maxScore}";
             ShowQuestion(_currentQuestionIndex);
         }
-
+        /// <summary>
+        /// Сохраняет результат прохождения теста в базе данных
+        /// Обновляет или вставляет запись test_results
+        /// </summary>
+        /// <param name="percentage">Процент набранных баллов</param>
         private async Task SaveTestResultAsync(double percentage)
         {
             await Task.Run(() =>
@@ -511,7 +535,14 @@ namespace WpfApp1
             });
         }
     }
-
+    /// <summary>
+    /// Конструктор окна результатов теста
+    /// Показывает название, баллы и процент выполнения
+    /// </summary>
+    /// <param name="testTitle">Название теста</param>
+    /// <param name="score">Набранные баллы</param>
+    /// <param name="maxScore">Максимальные баллы</param>
+    /// <param name="percentage">Процент выполнения</param>
     public class TestResultWindow : Window
     {
         public TestResultWindow(string testTitle, int score, int maxScore, double percentage)
@@ -569,27 +600,33 @@ namespace WpfApp1
             Content = stackPanel;
         }
     }
-
+    /// <summary>
+    /// Модель вопроса в тесте
+    /// Содержит текст, тип, баллы, список ответов и информацию об ответе
+    /// </summary>
     public class QuestionViewModel
     {
         public int Id { get; set; }
         public string Text { get; set; }
         public string Type { get; set; }
         public int Points { get; set; }
-        public int OrderIndex { get; set; }  // Added to match database column
+        public int OrderIndex { get; set; } 
         public List<AnswerViewModel> Answers { get; set; }
         public bool IsAnswered { get; set; }
         public bool WasAnsweredBefore { get; set; }
         public int PointsEarned { get; set; }
         public bool IsFullyCorrect { get; set; }
     }
-
+    /// <summary>
+    /// Модель варианта ответа в тесте
+    /// Содержит текст, флаг правильности и выбор пользователя
+    /// </summary>
     public class AnswerViewModel
     {
         public int Id { get; set; }
         public string Text { get; set; }
         public bool IsCorrect { get; set; }
         public bool IsSelected { get; set; }
-        public int OrderIndex { get; set; }  // Added to match database column
+        public int OrderIndex { get; set; }  
     }
 }

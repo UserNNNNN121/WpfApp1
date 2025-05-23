@@ -93,7 +93,7 @@
             </Grid>
         </Grid>
 
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2" Margin="0,0,0,-50">
             <Grid Height="958">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="189*"/>

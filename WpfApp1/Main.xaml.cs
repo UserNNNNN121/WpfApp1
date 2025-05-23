@@ -19,7 +19,13 @@ namespace WpfApp1
         public int _userId;
         public bool _isAdmin;
         private int _userSpecialityId = 7;
-
+        /// <summary>
+        /// Конструктор окна Main.
+        /// Инициализирует компоненты и подписывается на обновление доступности курсов.
+        /// Также загружает список курсов для отображения.
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="isAdmin">Флаг, указывающий, является ли пользователь администратором</param>
         public Main(int userId, bool isAdmin)
         {
             InitializeComponent();
@@ -35,6 +41,10 @@ namespace WpfApp1
 
             LoadCourses();
         }
+        /// <summary>
+        /// Метод обработки события обновления доступности курсов.
+        /// Вызывает оповещение для пользователя.
+        /// </summary>
         private void OnCoursesAvailabilityUpdated()
         {
             Dispatcher.Invoke(() =>
@@ -46,6 +56,10 @@ namespace WpfApp1
                               MessageBoxImage.Information);
             });
         }
+        /// <summary>
+        /// Загружает курсы в зависимости от специальности пользователя и его подтвержденного статуса.
+        /// Отображает соответствующий список курсов.
+        /// </summary>
         private void LoadCourses()
         {
             try
@@ -79,7 +93,11 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка загрузки курсов: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Получает ID специальности для конкретного курса.
+        /// </summary>
+        /// <param name="courseId">ID курса</param>
+        /// <returns>ID специальности</returns>
         private int GetCourseSpeciality(int courseId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -95,6 +113,10 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Получает список всех курсов, доступных в системе.
+        /// </summary>
+        /// <returns>Список курсов</returns>
         private List<CourseInfo> GetAllCourses()
         {
             var courses = new List<CourseInfo>();
@@ -124,7 +146,11 @@ namespace WpfApp1
 
             return courses;
         }
-
+        /// <summary>
+        /// Получает ID специальности пользователя из базы данных.
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <returns>ID специальности</returns>
         private int GetUserSpecialityId(int userId)
         {
             try
@@ -150,6 +176,12 @@ namespace WpfApp1
                 return -1;
             }
         }
+        /// <summary>
+        /// Проверяет, подтвержден ли пользователь или администратор.
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="isAdmin">Флаг администратора</param>
+        /// <returns>true, если подтвержден; иначе false</returns>
         private bool IsUserConfirmed(int userId, bool isAdmin)
         {
             try
@@ -186,7 +218,10 @@ namespace WpfApp1
                 return false;
             }
         }
-
+        /// <summary>
+        /// Добавляет затемняющий оверлей и сообщение, если пользователь не подтвержден.
+        /// </summary>
+        /// <param name="scrollViewer">ScrollViewer, к которому добавляется оверлей</param>
         private void AddConfirmationOverlay(ScrollViewer scrollViewer)
         {
             if (scrollViewer.Parent is Grid parentGrid && parentGrid.Children.OfType<Border>().Any(b => b.Name == "ConfirmationOverlay"))
@@ -248,7 +283,10 @@ namespace WpfApp1
                 Grid.SetColumn(overlay, Grid.GetColumn(scrollViewer));
             }
         }
-
+        /// <summary>
+        /// Удаляет оверлей подтверждения и эффект размытия.
+        /// </summary>
+        /// <param name="scrollViewer">ScrollViewer, с которого удаляется оверлей</param>
         private void RemoveConfirmationOverlay(ScrollViewer scrollViewer)
         {
             if (scrollViewer.Parent is Grid grid)
@@ -261,6 +299,11 @@ namespace WpfApp1
             }
             scrollViewer.Effect = null;
         }
+        /// <summary>
+        /// Получает список курсов по ID специальности.
+        /// </summary>
+        /// <param name="specialityId">ID специальности</param>
+        /// <returns>Список курсов</returns>
         private List<CourseInfo> GetCoursesBySpeciality(int specialityId)
         {
             var courses = new List<CourseInfo>();
@@ -296,19 +339,27 @@ namespace WpfApp1
 
             return courses;
         }
-
+        /// <summary>
+        /// Прокручивает ScrollViewer на заданное смещение по горизонтали.
+        /// </summary>
+        /// <param name="scrollViewer">Элемент ScrollViewer</param>
+        /// <param name="offset">Смещение</param>
         private void ScrollCarousel(ScrollViewer scrollViewer, int offset)
         {
             scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + offset);
         }
-
+        /// <summary>
+        /// Загружает курсы в интерфейс в виде карточек в StackPanel.
+        /// </summary>
+        /// <param name="courses">Список курсов</param>
+        /// <param name="container">Контейнер StackPanel</param>
+        /// <param name="headerText">Заголовок для группы курсов</param>
         private void LoadCoursesToCarousel(List<CourseInfo> courses, StackPanel container, string headerText)
         {
             if (container == null) return;
 
             container.Children.Clear();
 
-            // Get user's course statuses first
             Dictionary<int, string> userCourseStatuses = GetUserCourseStatuses(_userId, _isAdmin);
 
             foreach (var course in courses)
@@ -342,7 +393,6 @@ namespace WpfApp1
                     TextTrimming = TextTrimming.CharacterEllipsis
                 };
 
-                // Add status label
                 var statusLabel = new TextBlock
                 {
                     FontSize = 12,
@@ -353,14 +403,12 @@ namespace WpfApp1
                 if (userCourseStatuses.TryGetValue(course.Id, out string status))
                 {
                     statusLabel.Text = $"Статус: {status}";
-                    // Change color based on status
                 }
                 else
                 {
                     statusLabel.Text = "Статус: Не начат";
                 }
 
-                // Add available until label if exists
                 if (course.AvailableUntil.HasValue)
                 {
                     var availableLabel = new TextBlock
@@ -381,6 +429,12 @@ namespace WpfApp1
                 container.Children.Add(button);
             }
         }
+        /// <summary>
+        /// Получает словарь с курсами пользователя и их статусами.
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="isAdmin">Флаг администратора</param>
+        /// <returns>Словарь ID курса и его статуса</returns>
         private Dictionary<int, string> GetUserCourseStatuses(int userId, bool isAdmin)
         {
             var statuses = new Dictionary<int, string>();
@@ -411,7 +465,11 @@ namespace WpfApp1
 
             return statuses;
         }
-
+        /// <summary>
+        /// Обрабатывает клик по курсу — добавляет курс пользователю и открывает окно курса.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void Course_Click(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;
@@ -422,6 +480,11 @@ namespace WpfApp1
             course.Show();
             this.Close();
         }
+        /// <summary>
+        /// Добавляет курс пользователю в базу данных, если он ещё не был добавлен.
+        /// </summary>
+        /// <param name="courseId">ID курса</param>
+        /// <param name="userId">ID пользователя</param>
         private void AddCourseToUser(int courseId, int userId)
         {
             try
@@ -459,6 +522,10 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при добавлении курса: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Применяет параметры текущего окна к новому окну (позиция, размеры, состояние).
+        /// </summary>
+        /// <param name="nextWindow">Новое окно</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -468,7 +535,11 @@ namespace WpfApp1
             nextWindow.WindowState = this.WindowState;
         }
 
-
+        /// <summary>
+        /// Открывает окно поддержки.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(_isAdmin, _userId);
@@ -476,7 +547,11 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Открывает окно личного кабинета.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             Window account = new Personal_Account(_isAdmin, _userId);
@@ -484,7 +559,11 @@ namespace WpfApp1
             account.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Открывает окно часто задаваемых вопросов.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(_isAdmin, _userId);
@@ -492,7 +571,11 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Завершает текущую сессию и возвращает пользователя на главное окно.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();
@@ -500,6 +583,11 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
+        /// <summary>
+        /// Перезагружает текущее окно (обновление интерфейса).
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             Window main = new Main(_userId, _isAdmin);
@@ -509,7 +597,10 @@ namespace WpfApp1
         }
 
     }
-
+    /// <summary>
+    /// Класс CourseInfo содержит основную информацию о курсе:
+    /// идентификатор, название, описание и дату окончания доступности
+    /// </summary>
     public class CourseInfo
     {
         public int Id { get; set; }

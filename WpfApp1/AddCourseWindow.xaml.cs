@@ -24,6 +24,10 @@ namespace WpfApp1
         private byte[] _sealImage;
         private byte[] _signatureImage;
         private bool _enableCertificate = false;
+        /// <summary>
+        /// Конструктор класса AddCourseWindow. Инициализирует компоненты окна, загружает данные для ComboBox,
+        /// устанавливает начальный шаг и настраивает валидацию даты для DatePicker.
+        /// </summary>
         public AddCourseWindow()
         {
             InitializeComponent();
@@ -33,11 +37,15 @@ namespace WpfApp1
             dpAvailableUntil.BlackoutDates.Add(new CalendarDateRange(DateTime.MinValue, DateTime.Today.AddDays(-1)));
             dpAvailableUntil.DateValidationError += DpAvailableUntil_DateValidationError;
         }
+        /// <summary>
+        /// Обработчик события валидации даты для DatePicker. Проверяет, что выбранная дата не раньше текущего дня.
+        /// </summary>
+        /// <param name="sender">Объект, вызвавший событие</param>
+        /// <param name="e">Аргументы события валидации даты</param>
         private void DpAvailableUntil_DateValidationError(object sender, DatePickerDateValidationErrorEventArgs e)
         {
             if (e.Text == "")
             {
-                // Разрешаем очистку даты
                 return;
             }
 
@@ -47,16 +55,21 @@ namespace WpfApp1
                 {
                     MessageBox.Show("Дата не может быть раньше сегодняшнего дня");
                     e.ThrowException = true;
-                    dpAvailableUntil.SelectedDate = DateTime.Today; // Устанавливаем сегодняшнюю дату
+                    dpAvailableUntil.SelectedDate = DateTime.Today; 
                 }
             }
             else
             {
                 MessageBox.Show("Введите корректную дату");
                 e.ThrowException = true;
-                dpAvailableUntil.SelectedDate = DateTime.Today; // Устанавливаем сегодняшнюю дату
+                dpAvailableUntil.SelectedDate = DateTime.Today; 
             }
         }
+        /// <summary>
+        /// Обработчик события нажатия кнопки настроек сертификата. Открывает окно настроек сертификата.
+        /// </summary>
+        /// <param name="sender">Объект, вызвавший событие</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnCertificateSettings_Click(object sender, RoutedEventArgs e)
         {
             // Создаем окно с передачей courseId (0 для нового курса)
@@ -69,7 +82,9 @@ namespace WpfApp1
                 _signatureImage = certWindow.SignatureImage;
             }
         }
-
+        /// <summary>
+        /// Загружает данные для ComboBox из базы данных (специальности, доступность, партнеры).
+        /// </summary>
         private void LoadComboBoxData()
         {
             var specialities = new List<dynamic>();
@@ -130,7 +145,9 @@ namespace WpfApp1
             cmbPartner.DisplayMemberPath = "Name";
             cmbPartner.SelectedValuePath = "Id";
         }
-
+        /// <summary>
+        /// Показывает первый шаг формы добавления курса (основная информация о курсе).
+        /// </summary>
         private void ShowStep1()
         {
             _currentStep = 1;
@@ -140,6 +157,9 @@ namespace WpfApp1
 
             btnNext.Content = "Далее";
         }
+        /// <summary>
+        /// Показывает второй шаг формы добавления курса (предпросмотр информации и управление модулями).
+        /// </summary>
         private void ShowStep2()
         {
             _currentStep = 2;
@@ -151,16 +171,15 @@ namespace WpfApp1
             _currentCourse = new CourseModel
             {
                 Name = txtName.Text,
-                Description = txtDescription.Text, // Add this line
+                Description = txtDescription.Text, 
                 SpecialityId = (cmbSpeciality.SelectedItem as dynamic)?.Id ?? 0,
                 AvailabilityId = (cmbAvailability.SelectedItem as dynamic)?.Id ?? 0,
                 PartnerId = (cmbPartner.SelectedItem as dynamic)?.Id ?? 0,
                 AvailableUntil = dpAvailableUntil.SelectedDate
             };
 
-            // Update preview information
             txtPreviewName.Text = _currentCourse.Name;
-            txtPreviewDescription.Text = _currentCourse.Description; // Add this line
+            txtPreviewDescription.Text = _currentCourse.Description; 
             txtPreviewSpeciality.Text = cmbSpeciality.Text;
             txtPreviewAvailability.Text = _currentCourse.AvailabilityId == 1 ? "Доступен" : "Не доступен";
             txtPreviewPartner.Text = cmbPartner.Text;
@@ -168,11 +187,16 @@ namespace WpfApp1
                 ? $"Доступен до: {_currentCourse.AvailableUntil.Value.ToShortDateString()}"
                 : "Без ограничения по времени";
         }
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Далее/Сохранить". В зависимости от текущего шага либо переходит
+        /// к следующему шагу, либо сохраняет курс.
+        /// </summary>
+        /// <param name="sender">Объект, вызвавший событие</param>
+        /// <param name="e">Аргументы события</param>
         private void btnNext_Click(object sender, RoutedEventArgs e)
         {
             if (_currentStep == 1)
             {
-                // Проверяем заполнение полей
                 if (string.IsNullOrWhiteSpace(txtName.Text) ||
                     cmbSpeciality.SelectedItem == null ||
                     cmbAvailability.SelectedItem == null ||
@@ -197,7 +221,11 @@ namespace WpfApp1
                 SaveCourse();
             }
         }
-
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Назад". Возвращает на предыдущий шаг формы.
+        /// </summary>
+        /// <param name="sender">Объект, вызвавший событие</param>
+        /// <param name="e">Аргументы события</param>
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             if (_currentStep == 2)
@@ -205,7 +233,10 @@ namespace WpfApp1
                 ShowStep1();
             }
         }
-
+        /// <summary>
+        /// Сохраняет курс, его модули и элементы модулей в базу данных. Включает транзакцию для обеспечения
+        /// целостности данных.
+        /// </summary>
         private void SaveCourse()
         {
             if (_modules.Count == 0)
@@ -227,13 +258,11 @@ namespace WpfApp1
                     {
                         try
                         {
-                            // Сохраняем курс
                             string query = @"INSERT INTO courses 
     (title, description, speciality_id, availability, partnership, available_until) 
     VALUES (@name, @description, @speciality, @availability, @partnership, @availableUntil);
     SELECT last_insert_rowid();";
 
-                            // ...
 
 
                             int courseId;
@@ -250,14 +279,12 @@ namespace WpfApp1
                                 courseId = Convert.ToInt32(command.ExecuteScalar());
                             }
 
-                            // Создаем папку для курса (для JSON структуры)
                             string courseFolder = Path.Combine("Courses", $"Course_{courseId}");
                             if (!Directory.Exists(courseFolder))
                             {
                                 Directory.CreateDirectory(courseFolder);
                             }
 
-                            // Сохраняем модули
                             foreach (var module in _modules)
                             {
                                 string moduleQuery = @"INSERT INTO modules 
@@ -276,14 +303,12 @@ namespace WpfApp1
                                     moduleId = Convert.ToInt32(moduleCommand.ExecuteScalar());
                                 }
 
-                                // Сохраняем элементы модуля
                                 var moduleItems = _moduleItems.Where(i => i.ModuleId == module.Id).ToList();
                                 foreach (var item in moduleItems)
                                 {
                                     byte[] contentData = null;
                                     string externalUrl = null;
 
-                                    // Для тестов данные будут сохраняться в отдельных таблицах
                                     if (item.ItemType != "test" && !string.IsNullOrEmpty(item.ContentPath))
                                     {
                                         try
@@ -297,7 +322,6 @@ namespace WpfApp1
                                         }
                                     }
 
-                                    // Сохраняем элемент модуля
                                     string itemQuery = @"INSERT INTO module_items 
                             (module_id, item_type, title, content_data, external_url, duration_minutes, order_index) 
                             VALUES (@moduleId, @itemType, @title, @contentData, @externalUrl, @duration, @orderIndex);
@@ -317,12 +341,10 @@ namespace WpfApp1
                                         itemId = Convert.ToInt32(itemCommand.ExecuteScalar());
                                     }
 
-                                    // Обработка тестов - сохраняем в отдельные таблицы
                                     if (item.ItemType == "test")
                                     {
                                         try
                                         {
-                                            // Загружаем данные теста из файла (если есть)
                                             TestData testData = null;
                                             if (!string.IsNullOrEmpty(item.ContentPath))
                                             {
@@ -330,7 +352,6 @@ namespace WpfApp1
                                                 testData = Newtonsoft.Json.JsonConvert.DeserializeObject<TestData>(jsonContent);
                                             }
 
-                                            // Сохраняем основной тест
                                             string testQuery = @"INSERT INTO tests 
                 (module_item_id, total_points) 
                 VALUES (@moduleItemId, @totalPoints);
@@ -345,7 +366,6 @@ namespace WpfApp1
                                                 testId = Convert.ToInt32(testCommand.ExecuteScalar());
                                             }
 
-                                            // Сохраняем вопросы и ответы (если есть данные теста)
                                             if (testData?.Questions != null)
                                             {
                                                 foreach (var question in testData.Questions)
@@ -367,7 +387,6 @@ namespace WpfApp1
                                                         questionId = Convert.ToInt32(questionCommand.ExecuteScalar());
                                                     }
 
-                                                    // Сохраняем ответы на вопросы
                                                     foreach (var answer in question.Answers)
                                                     {
                                                         string answerQuery = @"INSERT INTO test_answers 
@@ -396,7 +415,6 @@ namespace WpfApp1
                                 }
                             }
 
-                            // Сохраняем структуру курса в JSON (указываем, что контент в БД)
                             SaveCourseStructure(courseFolder);
 
                             if (_enableCertificate)
@@ -422,6 +440,10 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка подключения: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Сохраняет структуру курса в JSON файл для последующего использования.
+        /// </summary>
+        /// <param name="courseFolder">Путь к папке курса</param>
         private void SaveCourseStructure(string courseFolder)
         {
             var courseStructure = new
@@ -449,6 +471,12 @@ namespace WpfApp1
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(courseStructure, Newtonsoft.Json.Formatting.Indented);
             File.WriteAllText(Path.Combine(courseFolder, "course_structure.json"), json);
         }
+        /// <summary>
+        /// Сохраняет настройки сертификата для курса в базу данных.
+        /// </summary>
+        /// <param name="courseId">ID курса</param>
+        /// <param name="connection">Подключение к базе данных</param>
+        /// <param name="transaction">Текущая транзакция</param>
         private void SaveCertificateSettings(int courseId, SQLiteConnection connection, SQLiteTransaction transaction)
         {
             try
@@ -473,23 +501,25 @@ namespace WpfApp1
                         MessageBox.Show("Не удалось сохранить настройки сертификата");
                     }
                 }
-
-                // Если есть текст сертификата, сохраняем его отдельно
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при сохранении настроек сертификата: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Добавить модуль". Открывает окно добавления нового модуля.
+        /// </summary>
+        /// <param name="sender">Объект, вызвавший событие</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAddModule_Click(object sender, RoutedEventArgs e)
         {
             var moduleWindow = new AddModuleWindow(_modules);
             if (moduleWindow.ShowDialog() == true)
             {
                 var newModule = moduleWindow.GetModule();
-                newModule.Id = _modules.Count > 0 ? _modules.Max(m => m.Id) + 1 : 1; // Assign unique ID
+                newModule.Id = _modules.Count > 0 ? _modules.Max(m => m.Id) + 1 : 1; 
 
-                // Add items with correct ModuleId
                 foreach (var item in moduleWindow.GetModuleItems())
                 {
                     item.ModuleId = newModule.Id;
@@ -500,30 +530,33 @@ namespace WpfApp1
                 RefreshModulesList();
             }
         }
+        /// <summary>
+        /// Обновляет список модулей в ListView.
+        /// </summary>
         private void RefreshModulesList()
         {
             lstModules.ItemsSource = null;
             lstModules.ItemsSource = _modules;
         }
-
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Редактировать модуль". Открывает окно редактирования выбранного модуля.
+        /// </summary>
+        /// <param name="sender">Объект, вызвавший событие</param>
+        /// <param name="e">Аргументы события</param>
         private void btnEditModule_Click(object sender, RoutedEventArgs e)
         {
             if (lstModules.SelectedItem is Module selectedModule)
             {
-                // Get only items for this module
                 var moduleItems = _moduleItems.Where(i => i.ModuleId == selectedModule.Id).ToList();
                 var moduleWindow = new AddModuleWindow(selectedModule, moduleItems, _modules);
 
                 if (moduleWindow.ShowDialog() == true)
                 {
-                    // Update module properties
                     selectedModule.Title = moduleWindow.GetModule().Title;
                     selectedModule.Description = moduleWindow.GetModule().Description;
 
-                    // Remove old items for this module
                     _moduleItems.RemoveAll(i => i.ModuleId == selectedModule.Id);
 
-                    // Add updated items with correct ModuleId
                     foreach (var item in moduleWindow.GetModuleItems())
                     {
                         item.ModuleId = selectedModule.Id;
@@ -534,6 +567,11 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Обработчик события нажатия кнопки "Удалить модуль". Удаляет выбранный модуль после подтверждения.
+        /// </summary>
+        /// <param name="sender">Объект, вызвавший событие</param>
+        /// <param name="e">Аргументы события</param>
         private void btnDeleteModule_Click(object sender, RoutedEventArgs e)
         {
             if (lstModules.SelectedItem is Module selectedModule)

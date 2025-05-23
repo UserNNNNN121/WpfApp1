@@ -11,22 +11,30 @@ namespace WpfApp1
 {
     public partial class Registration : Window
     {
-        private static readonly string connectionString = 
+        private static readonly string connectionString =
             $"Data Source={System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "educatingsystem.sl3")};Version=3;";
-        public bool isAdminRegistration;
         public int speciality;
         private string _generatedCode;
         private Stopwatch _codeResendTimer;
         private const int ResendDelaySeconds = 60;
-
-        public Registration(bool role, int speciality)
+        /// <summary>
+        /// Конструктор окна регистрации.
+        /// Принимает идентификатор специальности, инициализирует компоненты и таймер отправки кода.
+        /// </summary>
+        /// <param name="speciality">Идентификатор специальности</param>
+        public Registration(int speciality)
         {
             InitializeComponent();
-            isAdminRegistration = role;
+            this.speciality = speciality;
             _codeResendTimer = new Stopwatch();
             UpdateSendCodeButtonState();
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода на главное окно.
+        /// Открывает MainWindow и закрывает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             Window mainWindow = new MainWindow();
@@ -34,7 +42,12 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки поддержки.
+        /// Открывает окно поддержки и закрывает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(false, -1);
@@ -42,7 +55,12 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки вопросов и ответов.
+        /// Открывает окно FAQ и закрывает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(false, -1);
@@ -50,14 +68,23 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
+        /// <summary>
+        /// Обработчик кнопки "Назад".
+        /// Возвращает на окно выбора роли.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
-
-                Window role = new Role();
-                WindowProperties(role);
-                role.Show();
-                this.Close();
+            Window role = new Role();
+            WindowProperties(role);
+            role.Show();
+            this.Close();
         }
+        /// <summary>
+        /// Применяет свойства текущего окна к следующему (размер, позиция, состояние).
+        /// </summary>
+        /// <param name="nextWindow">Окно, которому применяются свойства</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -66,7 +93,12 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Отправить код".
+        /// Валидирует email, генерирует код и отправляет его на почту пользователя.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSendCode_Click(object sender, RoutedEventArgs e)
         {
             if (_codeResendTimer.IsRunning && _codeResendTimer.Elapsed.TotalSeconds < ResendDelaySeconds)
@@ -104,7 +136,10 @@ namespace WpfApp1
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        /// <summary>
+        /// Обновляет состояние кнопки "Отправить код".
+        /// Блокирует повторную отправку на заданное время.
+        /// </summary>
         private void UpdateSendCodeButtonState()
         {
             if (_codeResendTimer.IsRunning && _codeResendTimer.Elapsed.TotalSeconds < ResendDelaySeconds)
@@ -137,7 +172,11 @@ namespace WpfApp1
                 btnSendCode.IsEnabled = true;
             }
         }
-
+        /// <summary>
+        /// Генерирует случайный цифровой код заданной длины.
+        /// </summary>
+        /// <param name="length">Длина кода</param>
+        /// <returns>Сгенерированный код</returns>
         private string GenerateRandomCode(int length)
         {
             Random random = new Random();
@@ -183,7 +222,12 @@ namespace WpfApp1
                 throw;
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Зарегистрироваться".
+        /// Проверяет введённые данные, валидирует код, пароли и регистрирует пользователя.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccept_Click(object sender, RoutedEventArgs e)
         {
             string login = boxLog.Text.Trim();
@@ -218,25 +262,14 @@ namespace WpfApp1
                 MessageBox.Show("Пароль должен содержать минимум 8 символов!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
             try
             {
-                int newId;
-                bool isAdmin = isAdminRegistration;
+                int newId = RegisterUser(login, name, password, email);
+                MessageBox.Show($"Регистрация пользователя прошла успешно! ID: {newId}", "Успех",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
 
-                if (isAdmin)
-                {
-                    newId = RegisterAdministrator(login, name, password, speciality, email);
-                    MessageBox.Show($"Регистрация администратора прошла успешно! ID: {newId}", "Успех",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    newId = RegisterUser(login, name, password, email);
-                    MessageBox.Show($"Регистрация пользователя прошла успешно! ID: {newId}", "Успех",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-
-                Main main = new Main(newId, isAdmin);
+                Main main = new Main(newId, false);
                 WindowProperties(main);
                 main.Show();
                 this.Close();
@@ -247,71 +280,25 @@ namespace WpfApp1
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-        private int RegisterAdministrator(string login, string name, string password, int speciality, string email)
-        {
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            {
-                connection.Open();
-
-                // Check for existing login or email in both 'administrators' and 'users' tables
-                string checkQuery = @"
-            SELECT COUNT(*) 
-            FROM administrators 
-            WHERE login = @login OR mail = @email
-            UNION ALL
-            SELECT COUNT(*) 
-            FROM users 
-            WHERE login = @login OR mail = @email";
-
-                using (SQLiteCommand checkCommand = new SQLiteCommand(checkQuery, connection))
-                {
-                    checkCommand.Parameters.AddWithValue("@login", login);
-                    checkCommand.Parameters.AddWithValue("@email", email);
-                    using (SQLiteDataReader reader = checkCommand.ExecuteReader())
-                    {
-                        reader.Read();
-                        long adminCount = reader.GetInt64(0); // First result (from administrators table)
-                        reader.Read();
-                        long userCount = reader.GetInt64(0);  // Second result (from users table)
-
-                        if (adminCount > 0 || userCount > 0)
-                        {
-                            throw new Exception("Логин или email уже существует в системе!");
-                        }
-                    }
-                }
-
-                // Insert into administrators table
-                string query = @"
-            INSERT INTO administrators (login, password, name, confirmation, mail) 
-            VALUES (@login, @password, @name, 0, @email);
-            SELECT last_insert_rowid();";
-
-                using (SQLiteCommand command = new SQLiteCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@login", login);
-                    command.Parameters.AddWithValue("@password", password);
-                    command.Parameters.AddWithValue("@name", name);
-                    command.Parameters.AddWithValue("@email", email);
-
-                    int newAdminId = Convert.ToInt32(command.ExecuteScalar());
-                    return newAdminId;
-                }
-            }
-        }
-
+        /// <summary>
+        /// Регистрирует нового пользователя в базе данных.
+        /// Проверяет уникальность логина и email.
+        /// </summary>
+        /// <param name="login">Логин</param>
+        /// <param name="name">Имя</param>
+        /// <param name="password">Пароль</param>
+        /// <param name="email">Email</param>
+        /// <returns>Идентификатор нового пользователя</returns>
         private int RegisterUser(string login, string name, string password, string email)
         {
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
 
-                // Check for existing login or email in both 'users' and 'administrators' tables
                 string checkQuery = @"
             SELECT COUNT(*) 
             FROM administrators 
-            WHERE login = @login OR mail = @email
+            WHERE login = @login OR email = @email
             UNION ALL
             SELECT COUNT(*) 
             FROM users 
@@ -324,9 +311,9 @@ namespace WpfApp1
                     using (SQLiteDataReader reader = checkCommand.ExecuteReader())
                     {
                         reader.Read();
-                        long adminCount = reader.GetInt64(0); // First result (from administrators table)
+                        long adminCount = reader.GetInt64(0);
                         reader.Read();
-                        long userCount = reader.GetInt64(0);  // Second result (from users table)
+                        long userCount = reader.GetInt64(0);  
 
                         if (adminCount > 0 || userCount > 0)
                         {
@@ -335,7 +322,6 @@ namespace WpfApp1
                     }
                 }
 
-                // Insert into users table
                 string query = @"
             INSERT INTO users (login, password, name, speciality, confirmation, mail) 
             VALUES (@login, @password, @name, @speciality, 0, @email);
@@ -354,7 +340,12 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Аккаунт".
+        /// Показывает сообщение об ошибке при попытке входа без регистрации.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(
