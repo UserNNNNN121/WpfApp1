@@ -11,7 +11,10 @@ namespace WpfApp1
         private TestData _testData;
         private TestQuestion _currentQuestion;
         private List<TestQuestion> _questions = new List<TestQuestion>();
-
+        /// <summary>
+        /// Конструктор окна создания теста.
+        /// Инициализирует тест, заполняет список типов вопросов и устанавливает значение по умолчанию.
+        /// </summary>
         public CreateTestWindow()
         {
             InitializeComponent();
@@ -25,7 +28,12 @@ namespace WpfApp1
             cmbQuestionType.SelectedIndex = 0;
             txtTotalPoints.Text = _testData.TotalPoints.ToString();
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки добавления вопроса.
+        /// Валидирует ввод, создает новый вопрос и добавляет его в список.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAddQuestion_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtQuestionText.Text))
@@ -59,7 +67,12 @@ namespace WpfApp1
             txtQuestionText.Clear();
             txtQuestionPoints.Text = "1";
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки добавления ответа.
+        /// Валидирует ввод, создает новый ответ и добавляет его к текущему вопросу.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAddAnswer_Click(object sender, RoutedEventArgs e)
         {
             if (_currentQuestion == null)
@@ -99,13 +112,17 @@ namespace WpfApp1
                 chkIsCorrect.IsChecked = false;
             }
         }
-
+        /// <summary>
+        /// Обновляет отображение списка вопросов в интерфейсе.
+        /// </summary>
         private void RefreshQuestionsList()
         {
             lstQuestions.ItemsSource = null;
             lstQuestions.ItemsSource = _questions;
         }
-
+        /// <summary>
+        /// Обновляет отображение списка ответов текущего вопроса.
+        /// </summary>
         private void RefreshAnswersList()
         {
             lstAnswers.ItemsSource = null;
@@ -114,7 +131,10 @@ namespace WpfApp1
                 lstAnswers.ItemsSource = _currentQuestion.Answers;
             }
         }
-
+        /// <summary>
+        /// Обновляет видимость элементов управления для ответов в зависимости от типа вопроса.
+        /// Автоматически добавляет ответ для текстового типа.
+        /// </summary>
         private void UpdateAnswerControlsVisibility()
         {
             bool isTextType = _currentQuestion?.Type == "text";
@@ -124,7 +144,6 @@ namespace WpfApp1
             btnRemoveAnswer.Visibility = isTextType ? Visibility.Collapsed : Visibility.Visible;
             lstAnswers.Visibility = isTextType ? Visibility.Collapsed : Visibility.Visible;
 
-            // Для текстовых вопросов автоматически добавляем правильный ответ
             if (isTextType && _currentQuestion.Answers.Count == 0)
             {
                 var defaultAnswer = new TestAnswer
@@ -136,7 +155,12 @@ namespace WpfApp1
                 _currentQuestion.Answers.Add(defaultAnswer);
             }
         }
-
+        /// <summary>
+        /// Обработчик изменения выбранного вопроса в списке.
+        /// Обновляет текущий вопрос и связанные с ним элементы интерфейса.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void lstQuestions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (lstQuestions.SelectedItem is TestQuestion selectedQuestion)
@@ -146,7 +170,12 @@ namespace WpfApp1
                 UpdateAnswerControlsVisibility();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки удаления вопроса.
+        /// Удаляет выбранный вопрос и обновляет интерфейс.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnRemoveQuestion_Click(object sender, RoutedEventArgs e)
         {
             if (lstQuestions.SelectedItem is TestQuestion selectedQuestion)
@@ -161,7 +190,12 @@ namespace WpfApp1
                 RefreshQuestionsList();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки удаления ответа.
+        /// Удаляет выбранный ответ из текущего вопроса.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnRemoveAnswer_Click(object sender, RoutedEventArgs e)
         {
             if (_currentQuestion == null || _currentQuestion.Type == "text") return;
@@ -172,7 +206,13 @@ namespace WpfApp1
                 RefreshAnswersList();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки сохранения.
+        /// Проверяет корректность заполнения теста, валидирует баллы и правильность структуры.
+        /// Закрывает окно при успешной проверке.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
             if (_questions.Count == 0)
@@ -216,7 +256,10 @@ namespace WpfApp1
             this.DialogResult = true;
             this.Close();
         }
-
+        /// <summary>
+        /// Возвращает заполненные данные теста (вопросы и общее количество баллов).
+        /// </summary>
+        /// <returns>Объект TestData</returns>
         public TestData GetTestData()
         {
             if (int.TryParse(txtTotalPoints.Text, out int totalPoints))
@@ -226,18 +269,31 @@ namespace WpfApp1
             _testData.Questions = _questions;
             return _testData;
         }
-
+        /// <summary>
+        /// Обработчик кнопки отмены.
+        /// Закрывает окно без сохранения данных.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик изменения типа вопроса (в настоящее время не используется).
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void cmbQuestionType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Этот обработчик теперь не используется для изменения типа существующего вопроса
         }
-
+        /// <summary>
+        /// Обработчик завершения редактирования ячейки в таблице.
+        /// Обрабатывает смену типа вопроса и соответствующим образом обновляет ответы.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             if (e.Column.Header.ToString() == "Type" && e.EditAction == DataGridEditAction.Commit)
@@ -247,7 +303,6 @@ namespace WpfApp1
                 {
                     string newType = comboBox.SelectedItem.ToString();
 
-                    // Проверка при смене на single, если уже есть несколько правильных ответов
                     if (newType == "single" && _currentQuestion.Answers.Count(a => a.IsCorrect) > 1)
                     {
                         MessageBox.Show("Нельзя изменить тип на 'один ответ', так как уже есть несколько правильных ответов");
@@ -257,7 +312,6 @@ namespace WpfApp1
 
                     _currentQuestion.Type = newType;
 
-                    // Если меняем на text, очищаем ответы и добавляем один правильный
                     if (newType == "text")
                     {
                         _currentQuestion.Answers.Clear();

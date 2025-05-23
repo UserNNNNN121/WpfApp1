@@ -6,8 +6,11 @@ namespace WpfApp1
 {
     public partial class Role : Window
     {
-        private bool _role; 
-
+        private bool _role;
+        /// <summary>
+        /// Конструктор окна выбора роли.
+        /// Инициализирует компоненты и назначает обработчики кликов по кнопкам ролей.
+        /// </summary>
         public Role()
         {
             InitializeComponent();
@@ -20,7 +23,13 @@ namespace WpfApp1
             btnITspec.Click += RoleButton_Click;
             btnAccountist.Click += RoleButton_Click;
         }
-
+        /// <summary>
+        /// Обработчик нажатия на кнопку выбора роли.
+        /// Определяет специальность на основе выбранной кнопки,
+        /// открывает окно регистрации с передачей кода специальности.
+        /// </summary>
+        /// <param name="sender">Источник события — нажатая кнопка</param>
+        /// <param name="e">Аргументы события</param>
         private void RoleButton_Click(object sender, RoutedEventArgs e)
         {
             Button clickedButton = (Button)sender;
@@ -39,11 +48,16 @@ namespace WpfApp1
             else if (clickedButton == btnAccountist)
                 speciality = 2;
 
-            Window registration = new Registration(_role, speciality);
+            Window registration = new Registration(speciality);
             WindowProperties(registration);
             registration.Show();
             this.Close();
         }
+        /// <summary>
+        /// Устанавливает позицию и размеры нового окна аналогично текущему окну.
+        /// Используется для переноса внешнего вида между окнами.
+        /// </summary>
+        /// <param name="nextWindow">Окно, которому устанавливаются параметры</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -52,6 +66,12 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
+        /// <summary>
+        /// Обработчик нажатия на кнопку перехода на главное окно.
+        /// Открывает главное окно и закрывает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             Window mainWindow = new MainWindow();
@@ -59,7 +79,12 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки "Поддержка".
+        /// Открывает окно поддержки с передачей параметров и закрывает текущее окно.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(false, -1);
@@ -67,7 +92,12 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки "Часто задаваемые вопросы".
+        /// Открывает окно FAQ и закрывает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(false, -1);
@@ -75,6 +105,12 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
+        /// <summary>
+        /// Обработчик нажатия кнопки "Назад".
+        /// Возвращает пользователя на главное окно.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             Window mainWindow = new MainWindow();
@@ -82,7 +118,12 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки "Аккаунт".
+        /// Показывает сообщение об ошибке, если пользователь не авторизован.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(

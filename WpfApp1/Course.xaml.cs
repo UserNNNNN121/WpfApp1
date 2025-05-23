@@ -12,8 +12,13 @@ using static WpfApp1.CertificateGenerator;
 
 namespace WpfApp1
 {
+
     public partial class Course : Window
     {
+        /// <summary>
+        /// Класс CourseModule наследуется от Module и представляет модуль курса,
+        /// содержащий список элементов модуля (ModuleItem)
+        /// </summary>
         public class CourseModule : Module
         {
             public List<ModuleItem> Items { get; set; } = new List<ModuleItem>();
@@ -26,7 +31,13 @@ namespace WpfApp1
         private readonly bool _isAdmin;
         private List<CourseModule> _modules = new List<CourseModule>();
         private CourseModel _course;
-
+        /// <summary>
+        /// Конструктор окна курса. Инициализирует компоненты и загружает данные курса
+        /// на основе переданных идентификаторов пользователя и курса, а также флага администратора
+        /// </summary>
+        /// <param name="courseId">Идентификатор курса</param>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <param name="isAdmin">Флаг, указывающий, является ли пользователь администратором</param>
         public Course(int courseId, int userId, bool isAdmin)
         {
             InitializeComponent();
@@ -38,7 +49,9 @@ namespace WpfApp1
             ShowCourseOverview();
         }
 
-
+        /// <summary>
+        /// Загружает данные курса из базы данных, включая информацию о курсе, модулях и элементах модулей
+        /// </summary>
         private void LoadCourseData()
         {
             try
@@ -47,7 +60,6 @@ namespace WpfApp1
                 {
                     connection.Open();
 
-                    // Load course info
                     string courseQuery = "SELECT id, title, description, speciality_id, availability, partnership, available_until FROM courses WHERE id = @CourseId";
                     using (var cmd = new SQLiteCommand(courseQuery, connection))
                     {
@@ -69,12 +81,10 @@ namespace WpfApp1
                                 CourseTitle.Text = _course.Title;
                                 CourseDescription.Text = _course.Description;
 
-                                // Set the AvailableUntilLabel text
                                 if (_course.AvailableUntil.HasValue)
                                 {
                                     AvailableUntilLabel.Text = $"Доступен до: {_course.AvailableUntil.Value:dd.MM.yyyy}";
 
-                                    // Optional: Change color if course is about to expire
                                     if (_course.AvailableUntil.Value < DateTime.Now.AddDays(7))
                                     {
                                         AvailableUntilLabel.Foreground = Brushes.Red;
@@ -88,7 +98,6 @@ namespace WpfApp1
                         }
                     }
 
-                    // Load modules
                     string modulesQuery = @"
                         SELECT id, title, description, order_index 
                         FROM modules 
@@ -114,7 +123,6 @@ namespace WpfApp1
                         }
                     }
 
-                    // Load module items for each module
                     foreach (var module in _modules)
                     {
                         module.Items = LoadModuleItems(module.Id);
@@ -126,7 +134,11 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка загрузки данных курса: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Загружает элементы модуля из базы данных для указанного ID модуля
+        /// </summary>
+        /// <param name="moduleId">ID модуля</param>
+        /// <returns>Список элементов модуля</returns>
         private List<ModuleItem> LoadModuleItems(int moduleId)
         {
             var items = new List<ModuleItem>();
@@ -178,7 +190,10 @@ namespace WpfApp1
 
             return items;
         }
-
+        /// <summary>
+        /// Отмечает элемент модуля как завершенный для текущего пользователя
+        /// </summary>
+        /// <param name="moduleItemId">ID элемента модуля</param>
         private void MarkItemAsCompleted(int moduleItemId)
         {
             try
@@ -187,7 +202,6 @@ namespace WpfApp1
                 {
                     connection.Open();
 
-                    // First check if already completed
                     string checkQuery = @"
                 SELECT COUNT(*) 
                 FROM usersmoduleitems 
@@ -200,10 +214,9 @@ namespace WpfApp1
                         checkCmd.Parameters.AddWithValue("@ModuleItemId", moduleItemId);
 
                         int count = Convert.ToInt32(checkCmd.ExecuteScalar());
-                        if (count > 0) return; // Already completed
+                        if (count > 0) return; 
                     }
 
-                    // Insert new completion record
                     string insertQuery = @"
                 INSERT INTO usersmoduleitems 
                 (user_id, module_item_id, completed_at)
@@ -223,6 +236,9 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при сохранении статуса элемента: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Инициализирует боковое меню с кнопками для обзора курса и модулей
+        /// </summary>
         private void InitializeSideMenu()
         {
             var overviewButton = new Button
@@ -247,7 +263,9 @@ namespace WpfApp1
                 MenuItemsPanel.Children.Add(moduleButton);
             }
         }
-
+        /// <summary>
+        /// Отображает обзор курса с названием и описанием
+        /// </summary>
         private void ShowCourseOverview()
         {
             ContentGrid.Children.Clear();
@@ -273,7 +291,11 @@ namespace WpfApp1
             stackPanel.Children.Add(description);
             ContentGrid.Children.Add(stackPanel);
         }
-
+        /// <summary>
+        /// Обработчик клика по кнопке модуля. Отображает содержимое выбранного модуля
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Данные события</param>
         private void ModuleButton_Click(object sender, RoutedEventArgs e)
         {
             int moduleId = (sender as Button)?.Tag as int? ?? 0;
@@ -377,6 +399,11 @@ namespace WpfApp1
             scrollViewer.Content = stackPanel;
             ContentGrid.Children.Add(scrollViewer);
         }
+        /// <summary>
+        /// Получает ID теста для указанного элемента модуля
+        /// </summary>
+        /// <param name="moduleItemId">ID элемента модуля</param>
+        /// <returns>ID теста или 0, если не найден</returns>
         private int GetTestIdForModuleItem(int moduleItemId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -399,14 +426,16 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Отображает содержимое элемента модуля (лекцию, видео или тест)
+        /// </summary>
+        /// <param name="item">Элемент модуля для отображения</param>
         private void ShowContent(ModuleItem item)
         {
             if (item.ItemType == "test")
             {
                 try
                 {
-                    // Verify test belongs to current course before opening
                     int testId = GetTestIdForModuleItem(item.Id);
                     if (testId > 0)
                     {
@@ -451,7 +480,6 @@ namespace WpfApp1
                             };
                             contentPanel.Children.Add(textBlock);
 
-                            // Add a "Mark as Read" checkbox for lectures
                             var markAsReadCheck = new CheckBox
                             {
                                 Content = "Отметить как прочитанное",
@@ -467,7 +495,6 @@ namespace WpfApp1
 
                             markAsReadCheck.Unchecked += (s, e) =>
                             {
-                                // Optional: Add logic to unmark completion if needed
                             };
 
                             contentPanel.Children.Add(markAsReadCheck);
@@ -534,7 +561,7 @@ namespace WpfApp1
                                     mediaElement.Unloaded += (s, e) =>
                                     {
                                         try { File.Delete(tempVideoPath); }
-                                        catch { /* Ignore deletion errors */ }
+                                        catch {  }
                                     };
                                 }
                                 else
@@ -557,7 +584,6 @@ namespace WpfApp1
                             }
                         }
 
-                        // Add completion button for videos
                         if (!item.IsCompleted)
                         {
                             var completeButton = new Button
@@ -572,7 +598,7 @@ namespace WpfApp1
                                 MarkItemAsCompleted(item.Id);
                                 item.IsCompleted = true;
                                 MessageBox.Show("Видеоурок завершен!");
-                                ShowContent(item); // Refresh the view
+                                ShowContent(item); 
                             };
                             videoPanel.Children.Add(completeButton);
                         }
@@ -611,6 +637,11 @@ namespace WpfApp1
                 ContentGrid.Children.Add(scrollViewer);
             }
         }
+        /// <summary>
+        /// Загружает вопросы теста из базы данных
+        /// </summary>
+        /// <param name="testId">ID теста</param>
+        /// <returns>Список вопросов теста</returns>
         private List<TestQuestion> LoadTestQuestions(int testId)
         {
             var questions = new List<TestQuestion>();
@@ -672,13 +703,17 @@ namespace WpfApp1
 
             return questions;
         }
+        /// <summary>
+        /// Загружает данные теста из базы данных по ID элемента модуля
+        /// </summary>
+        /// <param name="moduleItemId">ID элемента модуля</param>
+        /// <returns>Данные теста или null, если не найдены</returns>
         private TestData LoadTestDataFromDb(int moduleItemId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
             {
                 connection.Open();
 
-                // First get the test ID from module_item_id
                 string testIdQuery = @"
             SELECT id 
             FROM tests 
@@ -695,11 +730,10 @@ namespace WpfApp1
                     }
                     else
                     {
-                        return null; // No test found for this module item
+                        return null; 
                     }
                 }
 
-                // Now load the test data
                 string testQuery = @"
             SELECT available_until, total_points 
             FROM tests 
@@ -719,7 +753,6 @@ namespace WpfApp1
                                 Questions = new List<TestQuestion>()
                             };
 
-                            // Load questions for this test
                             string questionsQuery = @"
                         SELECT id, question_text, question_type, points, order_index 
                         FROM test_questions 
@@ -743,7 +776,6 @@ namespace WpfApp1
                                             Answers = new List<TestAnswer>()
                                         };
 
-                                        // Load answers for this question
                                         string answersQuery = @"
                                     SELECT answer_text, is_correct, order_index 
                                     FROM test_answers 
@@ -780,6 +812,11 @@ namespace WpfApp1
             }
             return null;
         }
+        /// <summary>
+        /// Получает содержимое лекции из базы данных
+        /// </summary>
+        /// <param name="itemId">ID элемента лекции</param>
+        /// <returns>Текст лекции</returns>
         private string GetLectureContentFromDb(int itemId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -799,7 +836,11 @@ namespace WpfApp1
             }
             return "Лекция не найдена";
         }
-
+        /// <summary>
+        /// Получает видео-контент из базы данных
+        /// </summary>
+        /// <param name="itemId">ID видео элемента</param>
+        /// <returns>Байтовый массив с видео или null</returns>
         private byte[] GetVideoContentFromDb(int itemId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -818,7 +859,11 @@ namespace WpfApp1
             }
             return null;
         }
-
+        /// <summary>
+        /// Получает статус прохождения теста для текущего пользователя
+        /// </summary>
+        /// <param name="moduleItemId">ID элемента модуля (теста)</param>
+        /// <returns>Строка с статусом теста</returns>
         private string GetTestStatus(int moduleItemId)
         {
             try
@@ -827,11 +872,9 @@ namespace WpfApp1
                 {
                     connection.Open();
 
-                    // Get test ID
                     int testId = GetTestIdForModuleItem(moduleItemId);
                     if (testId == 0) return "Не начат";
 
-                    // Check if test has been started
                     string statusQuery = @"
                 SELECT 
                     CASE 
@@ -859,6 +902,11 @@ namespace WpfApp1
                 return "Ошибка";
             }
         }
+        /// <summary>
+        /// Возвращает локализованное название типа элемента модуля
+        /// </summary>
+        /// <param name="type">Тип элемента</param>
+        /// <returns>Локализованное название</returns>
         private string GetItemTypeText(string type)
         {
             switch (type)
@@ -869,7 +917,10 @@ namespace WpfApp1
                 default: return type;
             }
         }
-
+        /// <summary>
+        /// Проверяет, завершил ли пользователь все элементы курса
+        /// </summary>
+        /// <returns>True если все элементы завершены, иначе False</returns>
         private bool HasCompletedAllItems()
         {
             try
@@ -878,7 +929,6 @@ namespace WpfApp1
                 {
                     connection.Open();
 
-                    // Get total items count
                     string totalQuery = @"
                 SELECT COUNT(*) 
                 FROM module_items mi
@@ -894,7 +944,6 @@ namespace WpfApp1
 
                     if (totalItems == 0) return false;
 
-                    // Get completed non-test items count
                     string completedQuery = @"
                 SELECT COUNT(*) 
                 FROM usersmoduleitems ucmi
@@ -912,7 +961,6 @@ namespace WpfApp1
                         completedItems = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
-                    // Get count of test items in this course
                     string testItemsQuery = @"
                 SELECT COUNT(*) 
                 FROM module_items mi
@@ -927,7 +975,6 @@ namespace WpfApp1
                         totalTestItems = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
-                    // Get count of COMPLETED tests (with 100% score) for this user
                     string completedTestsQuery = @"
                 SELECT COUNT(DISTINCT t.module_item_id)
                 FROM test_results tr
@@ -936,7 +983,7 @@ namespace WpfApp1
                 JOIN modules m ON mi.module_id = m.id
                 WHERE m.course_id = @CourseId
                 AND tr.user_id = @UserId
-                AND tr.score_percentage = 100";  // Only count tests with 100% score
+                AND tr.score_percentage = 100";  
 
                     int completedTestItems = 0;
                     using (var cmd = new SQLiteCommand(completedTestsQuery, connection))
@@ -955,36 +1002,57 @@ namespace WpfApp1
                 return false;
             }
         }
+        /// <summary>
+        /// Обработчик клика по кнопке переключения меню. Сворачивает/разворачивает боковое меню
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Данные события</param>
         private void btnToggleMenu_Click(object sender, RoutedEventArgs e)
         {
             SideMenuColumn.Width = SideMenuColumn.Width.Value == 60 ? new GridLength(200) : new GridLength(60);
         }
-
+        /// <summary>
+        /// Обработчик клика по кнопке перехода на главную страницу
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Данные события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             TransferToWindow(new Main(_userId, _isAdmin));
         }
 
-        private void btnAdmin_Click(object sender, RoutedEventArgs e)
-        {
-            TransferToWindow(new AdminControl(_isAdmin, _userId));
-        }
-
+        /// <summary>
+        /// Обработчик клика по кнопке перехода в поддержку
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Данные события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             TransferToWindow(new Support(_isAdmin, _userId));
         }
-
+        /// <summary>
+        /// Обработчик клика по кнопке перехода в личный кабинет
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Данные события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             TransferToWindow(new Personal_Account(_isAdmin, _userId));
         }
-
+        /// <summary>
+        /// Обработчик клика по кнопке перехода в FAQ
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Данные события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             TransferToWindow(new FAQs(_isAdmin, _userId));
         }
-
+        /// <summary>
+        /// Обработчик клика по кнопке завершения курса. Генерирует сертификат при успешном завершении
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Данные события</param>
         private void btnCompleteCourse_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -995,7 +1063,6 @@ namespace WpfApp1
                     return;
                 }
 
-                // First mark the course as completed in the database
                 MarkCourseAsCompleted();
 
                 var certificateData = GetCertificateData(_userId, _courseId);
@@ -1029,7 +1096,6 @@ namespace WpfApp1
                     certificateData.CompletionDate
                 );
 
-                // Save the certificate to database
                 SaveUserCertificate(_userId, certificateData.CertificateId, certificateBytes);
 
                 var saveDialog = new SaveFileDialog
@@ -1049,6 +1115,9 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при завершении курса: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Отмечает курс как завершенный для текущего пользователя в базе данных
+        /// </summary>
         private void MarkCourseAsCompleted()
         {
             try
@@ -1057,7 +1126,6 @@ namespace WpfApp1
                 {
                     connection.Open();
 
-                    // Check if the course is already marked as completed
                     string checkQuery = @"
                 SELECT COUNT(*) 
                 FROM userscourses 
@@ -1071,7 +1139,6 @@ namespace WpfApp1
                         int existingCount = Convert.ToInt32(checkCmd.ExecuteScalar());
                         if (existingCount > 0)
                         {
-                            // Update existing record
                             string updateQuery = @"
                         UPDATE userscourses 
                         SET status = 2, completion_date = @completionDate
@@ -1089,7 +1156,6 @@ namespace WpfApp1
                         }
                         else
                         {
-                            // Insert new record
                             string insertQuery = @"
                         INSERT INTO userscourses 
                         (user, course, status, completion_date)
@@ -1113,7 +1179,12 @@ namespace WpfApp1
                 throw;
             }
         }
-
+        /// <summary>
+        /// Сохраняет сертификат пользователя в базе данных
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="certificateId">ID сертификата</param>
+        /// <param name="pdfData">Данные PDF сертификата</param>
         private void SaveUserCertificate(int userId, int certificateId, byte[] pdfData)
         {
             try
@@ -1136,7 +1207,6 @@ namespace WpfApp1
                         int existingCount = Convert.ToInt32(checkCmd.ExecuteScalar());
                         if (existingCount > 0)
                         {
-                            // Update existing record
                             string updateQuery = @"
                         UPDATE userscertificates 
                         SET pdf_data = @pdfData, date = @date
@@ -1156,7 +1226,6 @@ namespace WpfApp1
                         }
                     }
 
-                    // Insert new record
                     string insertQuery = @"
                 INSERT INTO userscertificates 
                 (user, certificate, date, pdf_data)
@@ -1179,6 +1248,12 @@ namespace WpfApp1
                 throw;
             }
         }
+        /// <summary>
+        /// Получает данные необходимые для генерации сертификата
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="courseId">ID курса</param>
+        /// <returns>Данные для сертификата или null</returns>
         private CertificateData GetCertificateData(int userId, int courseId)
         {
             try
@@ -1211,7 +1286,6 @@ WHERE c.id = @CourseId";
                         {
                             if (reader.Read())
                             {
-                                // Add null checks for all fields
                                 return new CertificateData
                                 {
                                     UserName = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
@@ -1235,7 +1309,10 @@ WHERE c.id = @CourseId";
             }
             return null;
         }
-
+        /// <summary>
+        /// Переход в указанное окно с сохранением позиции и размера текущего окна
+        /// </summary>
+        /// <param name="nextWindow">Окно для перехода</param>
         private void TransferToWindow(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -1246,16 +1323,17 @@ WHERE c.id = @CourseId";
             nextWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обновляет статус теста после его прохождения
+        /// </summary>
+        /// <param name="moduleItemId">ID элемента модуля (теста)</param>
         public void RefreshTestStatus(int moduleItemId)
         {
-            // Reload the module items to get fresh data
             foreach (var module in _modules)
             {
                 module.Items = LoadModuleItems(module.Id);
             }
 
-            // Find and refresh the module containing this test
             foreach (var child in MenuItemsPanel.Children)
             {
                 if (child is Button button && button.Tag is int moduleId &&

@@ -12,7 +12,13 @@ namespace WpfApp1
         public bool _isAuthorized;
         private static readonly string ConnectionString =
             $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "educatingsystem.sl3")};Version=3;";
-
+        /// <summary>
+        /// Конструктор окна смены пароля.
+        /// Устанавливает видимость кнопок в зависимости от роли и авторизации пользователя.
+        /// </summary>
+        /// <param name="isAdmin">Флаг администратора</param>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="isAuthorized">Флаг авторизации</param
         public NewPassword(bool isAdmin, int userId, bool isAuthorized)
         {
             InitializeComponent();
@@ -44,7 +50,12 @@ namespace WpfApp1
                 btnSupport.Visibility = Visibility.Collapsed;
             }
         }
-
+        /// <summary>
+        /// Обновляет пароль пользователя в базе данных SQLite.
+        /// Определяет таблицу по роли пользователя (админ/обычный пользователь).
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="newPassword">Новый пароль</param>
         private void UpdatePassword(int userId, string newPassword)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -63,7 +74,12 @@ namespace WpfApp1
                 command.ExecuteNonQuery();
             }
         }
-
+        /// <summary>
+        /// Обработчик события нажатия на кнопку "Восстановить".
+        /// Проверяет совпадение паролей и минимальную длину, обновляет пароль и открывает личный кабинет.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void RestoreButton_Click(object sender, RoutedEventArgs e)
         {
             string newPassword = boxPassw.Password;
@@ -99,7 +115,11 @@ namespace WpfApp1
                                "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        /// <summary>
+        /// Копирует размеры и позицию текущего окна на следующее.
+        /// Используется для передачи UI-свойств между окнами.
+        /// </summary>
+        /// <param name="nextWindow">Окно, на которое переходят</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -108,7 +128,12 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки "Главная".
+        /// Открывает главное окно в зависимости от статуса авторизации.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             if(_isAuthorized)
@@ -126,7 +151,12 @@ namespace WpfApp1
                 this.Close();
             }
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки "Назад".
+        /// Возвращает пользователя на окно входа.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();
@@ -134,7 +164,12 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Личный кабинет".
+        /// Проверяет ID пользователя и открывает соответствующее окно.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             if (_userId == -1)
@@ -153,6 +188,12 @@ namespace WpfApp1
                 this.Close();
             }
         }
+        /// <summary>
+        /// Обработчик кнопки "Админ панель".
+        /// Открывает окно панели администратора.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAdmin_Click(object sender, RoutedEventArgs e)
         {
             Window admin = new AdminControl(_isAdmin, _userId);
@@ -160,6 +201,12 @@ namespace WpfApp1
             admin.Show();
             this.Close();
         }
+        /// <summary>
+        /// Обработчик кнопки "Часто задаваемые вопросы".
+        /// Открывает окно с разделом FAQ.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(_isAdmin, _userId);
@@ -167,7 +214,12 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Поддержка".
+        /// Открывает окно с информацией о службе поддержки.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(_isAdmin, _userId);
@@ -175,7 +227,12 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Выход".
+        /// Возвращает пользователя на главное окно приложения.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();

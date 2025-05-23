@@ -37,6 +37,12 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Конструктор окна поддержки. Инициализирует компоненты, назначает обработчики событий,
+        /// загружает email пользователя, если он авторизован, и обновляет UI вложений.
+        /// </summary>
+        /// <param name="isAdmin">Флаг, указывающий, является ли пользователь администратором</param>
+        /// <param name="userId">Идентификатор пользователя</param>
         public Support(bool isAdmin, int userId)
         {
             InitializeComponent();
@@ -63,7 +69,13 @@ namespace WpfApp1
 
             UpdateAttachmentsUI();
         }
-
+        /// <summary>
+        /// Обработчик события кнопки "Прикрепить".
+        /// Открывает диалог выбора файлов, проверяет размер и количество,
+        /// сохраняет содержимое файлов в список вложений.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnAttach_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
@@ -103,7 +115,12 @@ namespace WpfApp1
                 UpdateAttachmentsUI();
             }
         }
-
+        /// <summary>
+        /// Обработчик удаления одного вложения.
+        /// Удаляет выбранное вложение из списка и обновляет интерфейс.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnRemoveSingleAttachment_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is Attachment attachment)
@@ -112,13 +129,21 @@ namespace WpfApp1
                 UpdateAttachmentsUI();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Удалить все вложения".
+        /// Очищает список вложений и обновляет интерфейс.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnRemoveAllAttachments_Click(object sender, RoutedEventArgs e)
         {
             _attachments.Clear();
             UpdateAttachmentsUI();
         }
-
+        /// <summary>
+        /// Обновляет интерфейс отображения вложений.
+        /// Показывает или скрывает контейнер вложений и кнопку удаления.
+        /// </summary>
         private void UpdateAttachmentsUI()
         {
             if (_attachments.Count > 0)
@@ -141,7 +166,9 @@ namespace WpfApp1
                 btnRemoveAllAttachments.Visibility = Visibility.Collapsed;
             }
         }
-
+        /// <summary>
+        /// Загружает email пользователя из базы данных SQLite по его идентификатору.
+        /// </summary>
         private void LoadUserEmail()
         {
             try
@@ -163,6 +190,12 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Обработчик активации флажка автозаполнения email.
+        /// Подставляет email пользователя в текстовое поле.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void ChkAutoEmail_Checked(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_userEmail))
@@ -176,13 +209,23 @@ namespace WpfApp1
                 chkAutoEmail.IsChecked = false;
             }
         }
-
+        /// <summary>
+        /// Обработчик деактивации флажка автозаполнения email.
+        /// Очищает и активирует поле ввода email.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void ChkAutoEmail_Unchecked(object sender, RoutedEventArgs e)
         {
             txtEmail.IsEnabled = true;
             txtEmail.Clear();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Отправить".
+        /// Валидирует обращение, сохраняет его в базу данных и прикрепляет файлы, если они есть.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void BtnSend_Click(object sender, RoutedEventArgs e)
         {
             string appealText = txtBoxAppeal.Text.Trim();
@@ -250,7 +293,9 @@ namespace WpfApp1
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+        /// <summary>
+        /// Очищает все поля формы и сбрасывает флажки и вложения.
+        /// </summary>
         private void ClearForm()
         {
             txtBoxAppeal.Clear();
@@ -259,6 +304,10 @@ namespace WpfApp1
             _attachments.Clear();
             UpdateAttachmentsUI();
         }
+        /// <summary>
+        /// Копирует свойства текущего окна (размер, положение) в переданное окно.
+        /// </summary>
+        /// <param name="nextWindow">Окно, которому будут переданы параметры</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -267,6 +316,12 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
+        /// <summary>
+        /// Обработчик кнопки "Главная".
+        /// Открывает главное окно в зависимости от статуса пользователя (гость или авторизованный).
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             if (_userId == -1) {
@@ -283,6 +338,12 @@ namespace WpfApp1
                 Close();
             }
         }
+        /// <summary>
+        /// Обработчик кнопки "Админ".
+        /// Открывает окно администрирования с передачей текущих параметров пользователя.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAdmin_Click(object sender, RoutedEventArgs e)
         {
             Window admin = new AdminControl(_isAdmin, _userId);
@@ -290,7 +351,12 @@ namespace WpfApp1
             admin.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Частые вопросы".
+        /// Открывает окно с FAQ.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             var faqs = new FAQs(_isAdmin, _userId);
@@ -298,6 +364,12 @@ namespace WpfApp1
             faqs.Show();
             Close();
         }
+        /// <summary>
+        /// Обработчик кнопки "Поддержка".
+        /// Перезапускает текущее окно поддержки.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(_isAdmin, _userId);
@@ -305,14 +377,26 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Выход".
+        /// Возвращает пользователя на главное окно приложения.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow mainWindow = new MainWindow();
+            Window mainWindow = new MainWindow();
             WindowProperties(mainWindow);
             mainWindow.Show();
             this.Close();
         }
+        /// <summary>
+        /// Обработчик кнопки "Аккаунт".
+        /// Проверяет, авторизован ли пользователь, и открывает окно аккаунта,
+        /// или показывает сообщение об ошибке для гостей.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             if (_userId == -1)

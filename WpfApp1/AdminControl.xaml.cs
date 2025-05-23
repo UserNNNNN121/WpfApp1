@@ -23,6 +23,7 @@ using System.Windows.Documents;
 
 namespace WpfApp1
 {
+
     public partial class AdminControl : Window
     {
         private static readonly string ConnectionString =
@@ -35,6 +36,12 @@ namespace WpfApp1
 
         public int _userId;
         public bool _isAdmin;
+        /// <summary>
+        /// /// Инициализирует новый экземпляр окна AdminControl с указанным статусом администратора и идентификатором пользователя.
+        /// Настраивает компоненты пользовательского интерфейса и инициализирует обработчики событий для обновления доступности курса.
+        /// </summary>
+        /// <param name="isAdmin">Указывает, обладает ли текущий пользователь правами администратора.</param>
+        /// <param name="userId">Уникальный идентификатор текущего пользователя.</param>
         public AdminControl(bool isAdmin, int userId)
         {
             InitializeComponent();
@@ -54,7 +61,10 @@ namespace WpfApp1
             this.Closed += (s, e) => CourseAvailabilityManager.CoursesAvailabilityUpdated -= OnCoursesAvailabilityUpdated;
         }
 
-
+        /// <summary>
+        /// Обрабатывает событие CoursesAvailabilityUpdated для уведомления об изменениях доступности курса.
+        /// Отображает информационное сообщение для пользователя о возможных изменениях доступности курса.
+        /// </summary>
         private void OnCoursesAvailabilityUpdated()
         {
             Dispatcher.Invoke(() =>
@@ -65,6 +75,9 @@ namespace WpfApp1
                               MessageBoxImage.Information);
             });
         }
+        /// <summary>
+        /// Represents administrator data including ID, login, name, and email.
+        /// </summary>
         public class Admin
         {
             public int Id { get; set; }
@@ -72,15 +85,22 @@ namespace WpfApp1
             public string Name { get; set; }
             public string Email { get; set; }
         }
+        /// <summary>
+        /// Представляет данные пользователя, включая идентификатор, логин, имя, специальность, статус подтверждения и адрес электронной почты.
+        /// </summary>
         public class User
         {
             public int Id { get; set; }
             public string Login { get; set; }
             public string Name { get; set; }
-            public string Speciality { get; set; } 
+            public string Speciality { get; set; }
             public int Confirmation { get; set; }
+            public string Email { get; set; }
         }
-
+        /// <summary>
+        /// Настраивает свойства следующего окна в соответствии с положением и размером текущего окна.
+        /// </summary>
+        /// <param name="nextWindow">Настраиваемое окно.</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -89,12 +109,14 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
-
+        /// <summary>
+        /// Инициализирует таблицу курсов, включив в нее столбцы для идентификатора, названия, специальности, доступности и информации о партнере.
+        /// Настраивает привязку данных и шаблонов редактирования для полей со списком в таблице.
+        /// </summary>
         private void InitializeCourseGrid()
         {
             gridCourses.Columns.Clear();
 
-            // ID Column
             gridCourses.Columns.Add(new DataGridTextColumn()
             {
                 Header = "ID",
@@ -103,7 +125,6 @@ namespace WpfApp1
                 IsReadOnly = true
             });
 
-            // Name Column
             gridCourses.Columns.Add(new DataGridTextColumn()
             {
                 Header = "Название",
@@ -112,7 +133,6 @@ namespace WpfApp1
                 IsReadOnly = false
             });
 
-            // Speciality Column (Dropdown)
             var specialityColumn = new DataGridTemplateColumn()
             {
                 Header = "Специальность",
@@ -145,7 +165,6 @@ namespace WpfApp1
             specialityColumn.CellEditingTemplate = specialityEditTemplate;
             gridCourses.Columns.Add(specialityColumn);
 
-            // Availability Column (Dropdown)
             var availabilityColumn = new DataGridTemplateColumn()
             {
                 Header = "Доступность",
@@ -178,7 +197,6 @@ namespace WpfApp1
             availabilityColumn.CellEditingTemplate = availabilityEditTemplate;
             gridCourses.Columns.Add(availabilityColumn);
 
-            // Available Until Column (DatePicker)
             var availableUntilColumn = new DataGridTemplateColumn()
             {
                 Header = "Доступен до",
@@ -187,23 +205,21 @@ namespace WpfApp1
 
             var availableUntilCellTemplate = new DataTemplate();
             var availableUntilTextBlockFactory = new FrameworkElementFactory(typeof(TextBlock));
-            availableUntilTextBlockFactory.SetBinding(TextBlock.TextProperty, new Binding("AvailableUntil")
-            {
-                StringFormat = "dd.MM.yyyy"
-            });
+            availableUntilTextBlockFactory.SetBinding(TextBlock.TextProperty,
+                new Binding("AvailableUntilFormatted")); 
             availableUntilCellTemplate.VisualTree = availableUntilTextBlockFactory;
             availableUntilColumn.CellTemplate = availableUntilCellTemplate;
 
             var availableUntilEditTemplate = new DataTemplate();
             var availableUntilDatePickerFactory = new FrameworkElementFactory(typeof(DatePicker));
-            availableUntilDatePickerFactory.SetBinding(DatePicker.SelectedDateProperty, new Binding("AvailableUntil"));
-            availableUntilDatePickerFactory.SetValue(DatePicker.DisplayDateStartProperty, DateTime.Today); // Устанавливаем минимальную дату как сегодня
-            availableUntilDatePickerFactory.SetValue(DatePicker.DisplayDateEndProperty, DateTime.Today.AddYears(10)); // Можно установить максимальную дату (например, +10 лет)
+            availableUntilDatePickerFactory.SetBinding(DatePicker.SelectedDateProperty,
+                new Binding("AvailableUntil") { UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+            availableUntilDatePickerFactory.SetValue(DatePicker.DisplayDateStartProperty, DateTime.Today);
+            availableUntilDatePickerFactory.SetValue(DatePicker.DisplayDateEndProperty, DateTime.Today.AddYears(10));
             availableUntilEditTemplate.VisualTree = availableUntilDatePickerFactory;
             availableUntilColumn.CellEditingTemplate = availableUntilEditTemplate;
             gridCourses.Columns.Add(availableUntilColumn);
 
-            // Partner Column (Dropdown)
             var partnershipColumn = new DataGridTemplateColumn()
             {
                 Header = "Партнер",
@@ -237,8 +253,11 @@ namespace WpfApp1
             partnershipColumn.CellEditingTemplate = partnershipEditTemplate;
             gridCourses.Columns.Add(partnershipColumn);
 
-            // Убраны колонки с действиями
         }
+        /// <summary>
+        /// Сохраняет информацию о модуле в базе данных и обновляет пользовательский интерфейс, чтобы отразить изменения.
+        /// </summary>
+        /// <param name="module">Объект модуля, содержащий сохраняемые данные.</param>
         private void SaveModule(Module module)
         {
             try
@@ -263,13 +282,11 @@ namespace WpfApp1
                     }
                 }
 
-                // Обновляем грид модулей
                 if (modulesGrid != null)
                 {
                     modulesGrid.Items.Refresh();
                 }
 
-                // Обновляем названия модулей в элементах
                 if (itemsGrid != null && itemsGrid.ItemsSource is IEnumerable<ModuleItemWithModule> items)
                 {
                     foreach (var item in items)
@@ -287,6 +304,12 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при сохранении модуля: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Отображает содержимое элемента модуля в новом окне с вкладками для содержимого и информации.
+        /// Поддерживает различные типы контента, включая текст, видео и тесты.
+        /// </summary>
+        /// <param name="sender">Кнопка, которая инициировала событие.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ViewModuleItem_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int itemId)) return;
@@ -305,7 +328,6 @@ namespace WpfApp1
 
             var tabControl = new TabControl();
 
-            // Вкладка с содержимым
             var contentTab = new TabItem { Header = "Содержимое" };
             var contentViewer = new ScrollViewer();
 
@@ -329,7 +351,6 @@ namespace WpfApp1
                 {
                     try
                     {
-                        // Сохраняем видео во временный файл
                         string tempFile = Path.GetTempFileName() + ".mp4";
                         File.WriteAllBytes(tempFile, item.ContentData);
 
@@ -432,7 +453,6 @@ namespace WpfApp1
             contentTab.Content = contentViewer;
             tabControl.Items.Add(contentTab);
 
-            // Вкладка с информацией
             var infoTab = new TabItem { Header = "Информация" };
             var infoPanel = new StackPanel { Margin = new Thickness(10) };
 
@@ -472,7 +492,11 @@ namespace WpfApp1
             viewWindow.Content = mainPanel;
             viewWindow.ShowDialog();
         }
-
+        /// <summary>
+        /// Создает описание содержимого элемента модуля на основе его типа и доступных данных.
+        /// </summary>
+        /// <param name="item">Элемент модуля, который требуется описать.</param>
+        /// <returns>строку, описывающую содержимое элемента.</returns>
         private string GetContentDescription(EditModuleItem item)
         {
             if (item.ContentData != null && item.ContentData.Length > 0)
@@ -488,14 +512,18 @@ namespace WpfApp1
                 return "Нет содержимого";
             }
         }
+        /// <summary>
+        ///  Сохраняет изменения в элементе модуля в базе данных.
+        /// Проверяет и обрабатывает настройки продолжительности для элементов типа видео.
+        /// </summary>
+        /// <param name="item">Элемент модуля, изменения в котором необходимо сохранить.</param>
         private void SaveModuleItem(ModuleItemWithModule item)
         {
             try
             {
-                // Проверяем, что длительность устанавливается только для видео
                 if (item.ItemType != "video" && item.DurationMinutes.HasValue)
                 {
-                    item.DurationMinutes = null; // Сбрасываем длительность для не-видео элементов
+                    item.DurationMinutes = null; 
                 }
 
                 using (var connection = new SQLiteConnection(ConnectionString))
@@ -530,6 +558,12 @@ namespace WpfApp1
         }
         private DataGrid modulesGrid;
         private DataGrid itemsGrid;
+        /// <summary>
+        /// Открывает окно расширенного редактирования курса с вкладками для управления модулями и элементами модуля.
+        /// Предоставляет широкие возможности редактирования структуры и содержания курса.
+        /// </summary>
+        /// <param name="sender">Кнопка, которая инициировала событие.</param>
+        /// <param name="e">Аргументы события.</param>
         private void AdvancedEditCourse_Click(object sender, RoutedEventArgs e)
         {
             if (gridCourses.SelectedItem == null)
@@ -744,7 +778,6 @@ namespace WpfApp1
             }
             itemsGrid.ItemsSource = allItems;
 
-            // Панель кнопок для элементов
             var itemsButtonPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -858,11 +891,16 @@ namespace WpfApp1
             advancedEditWindow.Content = mainPanel;
             advancedEditWindow.Closed += (s, args) =>
             {
-                // При закрытии окна загружаем данные заново, чтобы отменить несохраненные изменения
                 LoadCourses();
             };
             advancedEditWindow.ShowDialog();
         }
+        /// <summary>
+        /// Обрабатывает события нажатия кнопки в сетке элементов, включая действия по просмотру и сохранению.
+        /// Обновляет ссылки на название модуля при сохранении изменений в элементах.
+        /// </summary>
+        /// <param name="sender">Кнопка, которая инициировала событие.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ItemGridButtonClick(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource is Button button)
@@ -875,7 +913,6 @@ namespace WpfApp1
                     }
                     else if (button.Content.ToString() == "Сохранить")
                     {
-                        // Обновляем ModuleTitle при сохранении
                         if (itemsGrid.SelectedItem is ModuleItemWithModule item)
                         {
                             var selectedModule = item.AvailableModules.FirstOrDefault(m => m.Id == item.ModuleId);
@@ -891,16 +928,28 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Запускает процесс сохранения элемента модуля при нажатии кнопки сохранить.
+        /// Фиксирует изменения в таблице и уведомляет пользователя о том, что изменения будут сохранены.
+        /// </summary>
+        /// <param name="sender">Кнопка сохранения, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void SaveModuleItem_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int itemId)) return;
 
-            // Только отмечаем элемент как измененный, но не сохраняем в БД
             var dataGrid = FindParent<DataGrid>(button);
             dataGrid.CommitEdit(DataGridEditingUnit.Row, true);
 
             MessageBox.Show("Изменения будут сохранены при нажатии 'Сохранить все изменения'");
         }
+        /// <summary>
+        /// Обновляет данные для расширенного режима редактирования курса
+        /// Загружает модули и элементы модулей, связывает их с интерфейсом
+        /// </summary>
+        /// <param name="courseId">ID курса, для которого загружаются данные</param>
+        /// <param name="modulesGrid">Компонент DataGrid для отображения модулей</param>
+        /// <param name="itemsGrid">Компонент DataGrid для отображения элементов модулей</param>
         private void RefreshAdvancedEditData(int courseId, DataGrid modulesGrid, DataGrid itemsGrid)
         {
             var modules = GetModulesByCourseId(courseId);
@@ -926,6 +975,12 @@ namespace WpfApp1
             }
             itemsGrid.ItemsSource = allItems;
         }
+        /// <summary>
+        /// Открывает окно для добавления нового элемента модуля в указанный модуль.
+        /// Предоставляет варианты для разных типов элементов и загрузки контента.
+        /// </summary>
+        /// <param name="moduleId">ID модуля для добавления элемента.</param>
+        /// <param name="parentItemsGrid">Сетка DataGrid для отображения элементов модуля, которую нужно обновить после добавления.</param>
         private void AddNewModuleItem(int moduleId, DataGrid parentItemsGrid)
         {
             var addItemWindow = new Window
@@ -1145,7 +1200,6 @@ namespace WpfApp1
                     return;
                 }
 
-                // Проверка уникальности названия элемента в модуле
                 var existingItems = GetModuleItemsByModuleId(moduleId);
                 if (existingItems.Any(i => i.Title.Equals(titleTextBox.Text, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -1178,7 +1232,6 @@ namespace WpfApp1
                     {
                         connection.Open();
 
-                        // Получаем следующий порядковый номер
                         string orderQuery = "SELECT COALESCE(MAX(order_index), 0) + 1 FROM module_items WHERE module_id = @moduleId";
                         int orderIndex;
                         using (var orderCommand = new SQLiteCommand(orderQuery, connection))
@@ -1203,7 +1256,6 @@ namespace WpfApp1
 
                             command.ExecuteNonQuery();
 
-                            // Обновляем список элементов
                             var module = GetModuleById(moduleId);
                             var modules = GetModulesByCourseId(module.CourseId);
                             var allItems = new List<ModuleItemWithModule>();
@@ -1255,7 +1307,12 @@ namespace WpfApp1
             addItemWindow.Content = scrollViewer;
             addItemWindow.ShowDialog();
         }
-
+        /// <summary>
+        /// Открывает окно для добавления нового модуля в указанный курс.
+        /// Обрабатывает валидацию и операции с базой данных для создания модуля.
+        /// </summary>
+        /// <param name="courseId">ID курса для добавления модуля.</param>
+        /// <param name="modulesGrid">Сетка DataGrid для отображения модулей, которую нужно обновить после добавления.</param>
         private void AddNewModule(int courseId, DataGrid modulesGrid)
         {
             var addModuleWindow = new Window
@@ -1374,6 +1431,11 @@ namespace WpfApp1
             addModuleWindow.Content = scrollViewer;
             addModuleWindow.ShowDialog();
         }
+        /// <summary>
+        /// Обновляет интерфейс расширенного редактирования актуальными данными для указанного курса.
+        /// Обновляет отображение как модулей, так и элементов модулей.
+        /// </summary>
+        /// <param name="courseId">ID курса для обновления данных.</param>
         private void RefreshAdvancedEditData(int courseId)
         {
             var modules = GetModulesByCourseId(courseId);
@@ -1421,6 +1483,12 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Обновляет UI вопросов в окне создания теста для отражения текущих данных вопросов и ответов.
+        /// Управляет отображением и элементами взаимодействия для вопросов и ответов теста.
+        /// </summary>
+        /// <param name="questionsStack">StackPanel, содержащий UI вопросов.</param>
+        /// <param name="questions">Коллекция вопросов для отображения.</param>
         private void UpdateQuestionsUI(StackPanel questionsStack, ObservableCollection<EditTestQuestion> questions)
         {
             questionsStack.Children.Clear();
@@ -1575,6 +1643,10 @@ namespace WpfApp1
                 questionsStack.Children.Add(questionPanel);
             }
         }
+        /// <summary>
+        /// Представляет элемент модуля с дополнительной информацией о модуле, реализуя уведомления об изменении свойств.
+        /// Расширяет базовые данные элемента модуля названием модуля и обработкой длительности для видео-элементов.
+        /// </summary>
         public class ModuleItemWithModule : EditModuleItem, INotifyPropertyChanged
         {
             private string _moduleTitle;
@@ -1636,6 +1708,12 @@ namespace WpfApp1
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
         }
+        /// <summary>
+        /// Открывает окно редактирования выбранного модуля и применяет изменения при сохранении.
+        /// Обновляет как список модулей, так и затронутые элементы модулей в UI.
+        /// </summary>
+        /// <param name="sender">Кнопка редактирования, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void EditModule_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int moduleId)) return;
@@ -1649,7 +1727,8 @@ namespace WpfApp1
                 Width = 400,
                 Height = 300,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = this
+                Owner = this,
+                Icon = new BitmapImage(new Uri("pack://application:,,,/logo2.png"))
             };
 
             var panel = new StackPanel { Margin = new Thickness(10) };
@@ -1712,7 +1791,11 @@ namespace WpfApp1
             editWindow.Content = panel;
             editWindow.ShowDialog();
         }
-
+        /// <summary>
+        /// Получает модуль из базы данных по его уникальному идентификатору.
+        /// </summary>
+        /// <param name="moduleId">ID модуля для получения.</param>
+        /// <returns>Объект Module, если найден, иначе null.</returns>
         private Module GetModuleById(int moduleId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -1742,7 +1825,12 @@ namespace WpfApp1
             }
             return null;
         }
-
+        /// <summary>
+        /// Удаляет выбранный модуль после подтверждения, включая все связанные элементы модуля.
+        /// Обновляет UI после удаления и поддерживает целостность базы данных.
+        /// </summary>
+        /// <param name="sender">Кнопка удаления, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DeleteModule_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int moduleId)) return;
@@ -1842,6 +1930,12 @@ namespace WpfApp1
         }
 
 
+        /// <summary>
+        /// Открывает окно редактирования выбранного элемента модуля и применяет изменения при сохранении.
+        /// Обновляет список элементов модуля в UI после успешного редактирования.
+        /// </summary>
+        /// <param name="sender">Кнопка редактирования, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void EditModuleItem_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int itemId)) return;
@@ -2047,7 +2141,11 @@ namespace WpfApp1
             editWindow.Content = panel;
             editWindow.ShowDialog();
         }
-
+        /// <summary>
+        /// Получает элемент модуля из базы данных по его уникальному идентификатору.
+        /// </summary>
+        /// <param name="itemId">ID элемента модуля для получения.</param>
+        /// <returns>Объект EditModuleItem, если найден, иначе null.</returns>
         private EditModuleItem GetModuleItemById(int itemId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -2081,6 +2179,12 @@ namespace WpfApp1
             }
             return null;
         }
+        /// <summary>
+        /// Удаляет выбранный элемент модуля после подтверждения.
+        /// Обновляет список элементов модуля в UI после успешного удаления.
+        /// </summary>
+        /// <param name="sender">Кнопка удаления, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DeleteModuleItem_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int itemId)) return;
@@ -2108,7 +2212,6 @@ namespace WpfApp1
                             command.Parameters.AddWithValue("@itemId", itemId);
                             command.ExecuteNonQuery();
 
-                            // Обновляем родительское окно
                             var parentWindow = GetParentWindow(button);
                             if (parentWindow != null)
                             {
@@ -2154,7 +2257,11 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Находит родительское окно для элемента в визуальном дереве.
+        /// </summary>
+        /// <param name="child">Дочерний элемент, с которого начинается поиск.</param>
+        /// <returns>Родительское окно, если найдено, иначе null.</returns>
         private Window GetParentWindow(DependencyObject child)
         {
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);
@@ -2162,7 +2269,13 @@ namespace WpfApp1
             Window parent = parentObject as Window;
             return parent ?? GetParentWindow(parentObject);
         }
-
+        /// <summary>
+        /// Находит визуальный дочерний элемент указанного типа и необязательного имени в родительском элементе.
+        /// </summary>
+        /// <typeparam name="T">Тип искомого дочернего элемента.</typeparam>
+        /// <param name="parent">Родительский элемент для поиска.</param>
+        /// <param name="childName">Необязательное имя искомого дочернего элемента.</param>
+        /// <returns>Найденный дочерний элемент или null, если не найден.</returns>
         private T FindVisualChild<T>(DependencyObject parent, string childName = null) where T : DependencyObject
         {
             if (parent == null) return null;
@@ -2179,7 +2292,11 @@ namespace WpfApp1
             }
             return null;
         }
-        public class Course : INotifyPropertyChanged
+        /// <summary>
+        /// Представляет курс с уведомлениями об изменении свойств и возможностями валидации данных.
+        /// Включает информацию о специальности курса, доступности и партнерских отношениях.
+        /// </summary>
+        public class Course : INotifyPropertyChanged, IDataErrorInfo
         {
             private int _id;
             private string _name;
@@ -2234,11 +2351,23 @@ namespace WpfApp1
                 set { _availabilityName = value; OnPropertyChanged(); }
             }
 
+
             public DateTime? AvailableUntil
             {
                 get => _availableUntil;
-                set { _availableUntil = value; OnPropertyChanged(); }
+                set
+                {
+                    if (_availableUntil != value)
+                    {
+                        _availableUntil = value;
+                        OnPropertyChanged();
+                        OnPropertyChanged(nameof(AvailableUntilFormatted));
+                    }
+                }
             }
+
+            public string AvailableUntilFormatted =>
+                AvailableUntil?.ToString("dd.MM.yyyy") ?? "Не указано";
 
             public int PartnerId
             {
@@ -2290,14 +2419,32 @@ namespace WpfApp1
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
-        }
+            public string Error => null;
 
+            public string this[string columnName]
+            {
+                get
+                {
+                    if (columnName == "AvailableUntil" && AvailableUntil.HasValue && AvailableUntil < DateTime.Today)
+                    {
+                        return "Дата окончания не может быть в прошлом";
+                    }
+                    return null;
+                }
+            }
+        }
+        /// <summary>
+        /// Представляет партнерскую организацию с ID и названием.
+        /// </summary>
         public class Partner
         {
             public int Id { get; set; }
             public string Name { get; set; }
         }
 
+        /// <summary>
+        /// Представляет модуль курса с основной информацией и индексом порядка.
+        /// </summary>
         public class Module
         {
             public int Id { get; set; }
@@ -2306,7 +2453,9 @@ namespace WpfApp1
             public int OrderIndex { get; set; }
             public int CourseId { get; set; }
         }
-
+        /// <summary>
+        /// Представляет элемент внутри модуля курса с контентом и метаданными, специфичными для типа.
+        /// </summary>
         public class ModuleItem
         {
             public int Id { get; set; }
@@ -2318,7 +2467,10 @@ namespace WpfApp1
             public int? DurationMinutes { get; set; }
             public int OrderIndex { get; set; }
         }
-
+        /// <summary>
+        /// Получает все курсы из базы данных с информацией о связанных специальностях и партнерах.
+        /// </summary>
+        /// <returns>Список объектов Course, заполненных данными из базы данных.</returns>
         private List<Course> GetAllCourses()
         {
             var courses = new List<Course>();
@@ -2366,6 +2518,11 @@ namespace WpfApp1
     new { Id = 1, Name = "Доступен" },
     new { Id = 0, Name = "Не доступен" }
 };
+        /// <summary>
+        /// Получает модули для конкретного курса из базы данных, упорядоченные по их индексу.
+        /// </summary>
+        /// <param name="courseId">ID курса для получения модулей.</param>
+        /// <returns>Список объектов Module, принадлежащих указанному курсу.</returns>
         private List<Module> GetModulesByCourseId(int courseId)
         {
             var modules = new List<Module>();
@@ -2398,7 +2555,11 @@ namespace WpfApp1
 
             return modules;
         }
-
+        /// <summary>
+        /// Получает элементы модуля для конкретного модуля из базы данных, упорядоченные по их индексу.
+        /// </summary>
+        /// <param name="moduleId">ID модуля для получения элементов.</param>
+        /// <returns>Список объектов EditModuleItem, принадлежащих указанному модулю.</returns>
         private List<EditModuleItem> GetModuleItemsByModuleId(int moduleId)
         {
             var items = new List<EditModuleItem>();
@@ -2438,7 +2599,11 @@ namespace WpfApp1
 
             return items;
         }
-
+        /// <summary>
+        /// Сохраняет данные контента во временный файл и возвращает путь к файлу.
+        /// </summary>
+        /// <param name="blobData">Бинарные данные контента для сохранения.</param>
+        /// <returns>Путь к временному файлу или null, если сохранение не удалось.</returns>
         private string SaveContentToTempFile(object blobData)
         {
             if (blobData == null || blobData == DBNull.Value)
@@ -2456,27 +2621,258 @@ namespace WpfApp1
                 return null;
             }
         }
-
+        /// <summary>
+        /// Загружает данные пользователей из базы данных и заполняет сетки подтвержденных и неподтвержденных пользователей.
+        /// Разделяет пользователей по статусу подтверждения для административного просмотра.
+        /// </summary>
         private void LoadUsers()
         {
             try
             {
-                if (gridConfirmed != null && gridUnconfirmed != null)
+                var confirmedUsers = new List<User>();
+                var unconfirmedUsers = new List<User>();
+
+                using (var connection = new SQLiteConnection(ConnectionString))
                 {
-                    var confirmedScroll = mainScrollViewer.VerticalOffset;
-                    var unconfirmedScroll = mainScrollViewer.HorizontalOffset;
-                    gridConfirmed.ItemsSource = GetUsersByConfirmation(1);
-                    gridUnconfirmed.ItemsSource = GetUsersByConfirmation(2);
-                    mainScrollViewer.ScrollToVerticalOffset(confirmedScroll);
-                    mainScrollViewer.ScrollToHorizontalOffset(unconfirmedScroll);
+                    connection.Open();
+
+                    string confirmedQuery = @"SELECT u.id, u.login, u.name, s.name as speciality_name, u.confirmation, u.mail 
+                                   FROM users u
+                                   LEFT JOIN specialities s ON u.speciality = s.id
+                                   WHERE u.confirmation = 1";
+
+                    using (var command = new SQLiteCommand(confirmedQuery, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                confirmedUsers.Add(new User
+                                {
+                                    Id = reader.GetInt32(0),
+                                    Login = reader.GetString(1),
+                                    Name = reader.GetString(2),
+                                    Speciality = !reader.IsDBNull(3) ? reader.GetString(3) : string.Empty,
+                                    Confirmation = reader.GetInt32(4),
+                                    Email = !reader.IsDBNull(5) ? reader.GetString(5) : string.Empty
+                                });
+                            }
+                        }
+                    }
+                    string unconfirmedQuery = @"SELECT u.id, u.login, u.name, s.name as speciality_name, u.confirmation, u.mail 
+                                     FROM users u
+                                     LEFT JOIN specialities s ON u.speciality = s.id
+                                     WHERE u.confirmation = 0";
+
+                    using (var command = new SQLiteCommand(unconfirmedQuery, connection))
+                    {
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                unconfirmedUsers.Add(new User
+                                {
+                                    Id = reader.GetInt32(0),
+                                    Login = reader.GetString(1),
+                                    Name = reader.GetString(2),
+                                    Speciality = !reader.IsDBNull(3) ? reader.GetString(3) : string.Empty,
+                                    Confirmation = reader.GetInt32(4),
+                                    Email = !reader.IsDBNull(5) ? reader.GetString(5) : string.Empty
+                                });
+                            }
+                        }
+                    }
                 }
+
+                gridConfirmed.ItemsSource = confirmedUsers;
+                gridUnconfirmed.ItemsSource = unconfirmedUsers;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при загрузке пользователей: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Подтверждает регистрацию пользователя, обновляя его статус в базе данных и отправляя email-уведомление.
+        /// </summary>
+        /// <param name="sender">Кнопка подтверждения, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void ConfirmUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Button button) || !(button.Tag is int userId)) return;
 
+            try
+            {
+                using (var connection = new SQLiteConnection(ConnectionString))
+                {
+                    connection.Open();
+                    string query = "UPDATE users SET confirmation = 1 WHERE id = @userId";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@userId", userId);
+                        command.ExecuteNonQuery();
+                    }
+                }
+
+                string userEmail = "";
+                string userName = "";
+                using (var connection = new SQLiteConnection(ConnectionString))
+                {
+                    connection.Open();
+                    string query = "SELECT mail, name FROM users WHERE id = @userId";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@userId", userId);
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                userEmail = reader.GetString(0);
+                                userName = reader.GetString(1);
+                            }
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(userEmail))
+                {
+                    SendUserNotification(userEmail, userName, true);
+                }
+
+                MessageBox.Show("Пользователь успешно подтверждён!");
+                LoadUsers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при подтверждении пользователя: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Отклоняет регистрацию пользователя, удаляя его запись из базы данных и отправляя email-уведомление.
+        /// </summary>
+        /// <param name="sender">Кнопка отклонения, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void RejectUser_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Button button) || !(button.Tag is int userId)) return;
+
+            var result = MessageBox.Show(
+                "Вы уверены, что хотите отклонить этого пользователя? Его учетная запись будет удалена.",
+                "Подтверждение отклонения",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    string userEmail = "";
+                    string userName = "";
+                    using (var connection = new SQLiteConnection(ConnectionString))
+                    {
+                        connection.Open();
+                        string query = "SELECT mail, name FROM users WHERE id = @userId";
+
+                        using (var command = new SQLiteCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@userId", userId);
+                            using (var reader = command.ExecuteReader())
+                            {
+                                if (reader.Read())
+                                {
+                                    userEmail = reader.GetString(0);
+                                    userName = reader.GetString(1);
+                                }
+                            }
+                        }
+                    }
+
+                    using (var connection = new SQLiteConnection(ConnectionString))
+                    {
+                        connection.Open();
+                        string query = "DELETE FROM users WHERE id = @userId";
+
+                        using (var command = new SQLiteCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@userId", userId);
+                            command.ExecuteNonQuery();
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(userEmail))
+                    {
+                        SendUserNotification(userEmail, userName, false);
+                    }
+
+                    MessageBox.Show("Пользователь отклонён и удалён из системы.");
+                    LoadUsers();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при отклонении пользователя: {ex.Message}");
+                }
+            }
+        }
+        /// <summary>
+        /// Отправляет email-уведомление пользователю о статусе его регистрации (подтверждение или отклонение).
+        /// </summary>
+        /// <param name="email">Email-адрес получателя.</param>
+        /// <param name="userName">Имя пользователя, которому отправляется уведомление.</param>
+        /// <param name="isApproved">Флаг, указывающий, была ли регистрация подтверждена или отклонена.</param>
+        private void SendUserNotification(string email, string userName, bool isApproved)
+        {
+            try
+            {
+                string smtpServer = "smtp.mail.ru";
+                int smtpPort = 587;
+                string smtpUsername = "drm.k@bk.ru";
+                string smtpPassword = "1Bgue1Az5MeiKW4PRZnN";
+
+                using (SmtpClient smtpClient = new SmtpClient(smtpServer, smtpPort))
+                {
+                    smtpClient.EnableSsl = true;
+                    smtpClient.UseDefaultCredentials = false;
+                    smtpClient.Credentials = new NetworkCredential(smtpUsername, smtpPassword);
+
+                    MailMessage mailMessage = new MailMessage();
+                    mailMessage.From = new MailAddress(smtpUsername);
+                    mailMessage.To.Add(email);
+
+                    if (isApproved)
+                    {
+                        mailMessage.Subject = "Ваша учетная запись подтверждена";
+                        mailMessage.Body = $"Уважаемый(ая) {userName},\n\n" +
+                                         "Ваша учетная запись была успешно подтверждена администратором.\n\n" +
+                                         "Теперь вы можете войти в систему и начать обучение.\n\n" +
+                                         "С уважением,\nАдминистрация системы";
+                    }
+                    else
+                    {
+                        mailMessage.Subject = "Ваша регистрация отклонена";
+                        mailMessage.Body = $"Уважаемый(ая) {userName},\n\n" +
+                                         "К сожалению, ваша регистрация была отклонена администратором.\n\n" +
+                                         "Если вы считаете, что это произошло по ошибке, пожалуйста, свяжитесь с поддержкой.\n\n" +
+                                         "С уважением,\nАдминистрация системы";
+                    }
+
+                    smtpClient.Send(mailMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при отправке уведомления пользователю: {ex.Message}\n\n" +
+                              "Операция выполнена, но уведомление не было отправлено.",
+                              "Ошибка отправки", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        /// <summary>
+        /// Получает пользователей из базы данных, отфильтрованных по статусу подтверждения.
+        /// </summary>
+        /// <param name="confirmationStatus">Статус подтверждения для фильтрации (0 - неподтвержденные, 1 - подтвержденные).</param>
+        /// <returns>Список объектов User, соответствующих указанному статусу подтверждения.</returns>
         private List<User> GetUsersByConfirmation(int confirmationStatus)
         {
             var users = new List<User>();
@@ -2502,7 +2898,7 @@ namespace WpfApp1
                                 Id = reader.GetInt32(0),
                                 Login = reader.GetString(1),
                                 Name = reader.GetString(2),
-                                Speciality = reader.GetString(3), // Теперь получаем название специальности
+                                Speciality = reader.GetString(3), 
                                 Confirmation = reader.GetInt32(4)
                             });
                         }
@@ -2513,23 +2909,11 @@ namespace WpfApp1
             return users;
         }
 
-        private void ConfirmUser_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is int userId)
-            {
-                try
-                {
-                    UpdateUserConfirmation(userId, 1);
-                    LoadUsers();
-                    MessageBox.Show("Пользователь подтверждён!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
+        /// <summary>
+        /// Обновляет статус подтверждения пользователя в базе данных.
+        /// </summary>
+        /// <param name="userId">ID пользователя для обновления.</param>
+        /// <param name="newConfirmation">Новое значение статуса подтверждения.</param>
         private void UpdateUserConfirmation(int userId, int newConfirmation)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -2545,7 +2929,11 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Удаляет пользователя из базы данных после подтверждения.
+        /// </summary>
+        /// <param name="sender">Кнопка удаления, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DeleteUser_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is int userId)
@@ -2571,7 +2959,10 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Постоянно удаляет запись пользователя из базы данных.
+        /// </summary>
+        /// <param name="userId">ID пользователя для удаления.</param>
         private void DeleteUserFromDatabase(int userId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -2586,7 +2977,12 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Загружает и отображает интерфейс управления пользователями с сетками для подтвержденных и неподтвержденных пользователей.
+        /// Включает функциональность для подтверждения, отклонения и удаления пользователей.
+        /// </summary>
+        /// <param name="sender">Кнопка пользователей, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnUsers_Click(object sender, RoutedEventArgs e)
         {
             ShowBackButton();
@@ -2623,7 +3019,6 @@ namespace WpfApp1
             };
             Grid.SetRow(usersLabel, 1);
 
-            // Основная сетка с двумя колонками
             var contentGrid = new Grid
             {
                 MinWidth = 1700,
@@ -2633,7 +3028,6 @@ namespace WpfApp1
             contentGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(20) });
             contentGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Левая панель (пользователи)
             var leftPanel = new StackPanel
             {
                 Width = 820,
@@ -2641,7 +3035,6 @@ namespace WpfApp1
                 Background = Brushes.WhiteSmoke,
             };
 
-            // Грид подтвержденных пользователей
             var confirmedLabel = new Label
             {
                 Content = "Подтвержденные пользователи",
@@ -2655,7 +3048,7 @@ namespace WpfApp1
                 FontSize = 14,
                 AutoGenerateColumns = false,
                 Width = 820,
-                Height = 200, // Уменьшенная высота
+                Height = 200,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 Margin = new Thickness(0, 0, 0, 10),
@@ -2682,7 +3075,6 @@ namespace WpfApp1
             deleteButtonColumn.CellTemplate = deleteButtonTemplate;
             gridConfirmed.Columns.Add(deleteButtonColumn);
 
-            // Грид неподтвержденных пользователей
             var unconfirmedLabel = new Label
             {
                 Content = "Новые пользователи",
@@ -2696,7 +3088,7 @@ namespace WpfApp1
                 FontSize = 14,
                 AutoGenerateColumns = false,
                 Width = 820,
-                Height = 200, // Уменьшенная высота
+                Height = 200, 
                 HorizontalAlignment = HorizontalAlignment.Left,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 Margin = new Thickness(0, 0, 0, 10),
@@ -2709,18 +3101,34 @@ namespace WpfApp1
             gridUnconfirmed.Columns.Add(new DataGridTextColumn() { Header = "Имя", Binding = new Binding("Name"), Width = 200, IsReadOnly = true });
             gridUnconfirmed.Columns.Add(new DataGridTextColumn() { Header = "Специальность", Binding = new Binding("Speciality"), Width = 150, IsReadOnly = true });
 
-            var confirmButtonColumn = new DataGridTemplateColumn() { Header = "Операция", Width = 100 };
-            var confirmButtonTemplate = new DataTemplate();
-            var confirmButtonFactory = new FrameworkElementFactory(typeof(Button));
-            confirmButtonFactory.SetValue(Button.ContentProperty, "Подтвердить");
-            confirmButtonFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler(ConfirmUser_Click));
-            confirmButtonFactory.SetBinding(Button.TagProperty, new Binding("Id"));
-            confirmButtonFactory.SetValue(Button.MarginProperty, new Thickness(2));
-            confirmButtonFactory.SetValue(Button.PaddingProperty, new Thickness(5));
-            confirmButtonFactory.SetValue(Button.WidthProperty, 80.0);
-            confirmButtonTemplate.VisualTree = confirmButtonFactory;
-            confirmButtonColumn.CellTemplate = confirmButtonTemplate;
-            gridUnconfirmed.Columns.Add(confirmButtonColumn);
+            var actionColumn = new DataGridTemplateColumn() { Header = "Операции", Width = 200 };
+            var actionTemplate = new DataTemplate();
+            var actionStackFactory = new FrameworkElementFactory(typeof(StackPanel));
+            actionStackFactory.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+
+            var approveButtonFactory = new FrameworkElementFactory(typeof(Button));
+            approveButtonFactory.SetValue(Button.ContentProperty, "Подтвердить");
+            approveButtonFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler(ConfirmUser_Click));
+            approveButtonFactory.SetBinding(Button.TagProperty, new Binding("Id"));
+            approveButtonFactory.SetValue(Button.MarginProperty, new Thickness(2));
+            approveButtonFactory.SetValue(Button.PaddingProperty, new Thickness(5));
+            approveButtonFactory.SetValue(Button.BackgroundProperty, Brushes.LightGreen);
+            approveButtonFactory.SetValue(Button.WidthProperty, 100.0);
+
+            var rejectButtonFactory = new FrameworkElementFactory(typeof(Button));
+            rejectButtonFactory.SetValue(Button.ContentProperty, "Отклонить");
+            rejectButtonFactory.AddHandler(Button.ClickEvent, new RoutedEventHandler(RejectUser_Click));
+            rejectButtonFactory.SetBinding(Button.TagProperty, new Binding("Id"));
+            rejectButtonFactory.SetValue(Button.MarginProperty, new Thickness(2));
+            rejectButtonFactory.SetValue(Button.PaddingProperty, new Thickness(5));
+            rejectButtonFactory.SetValue(Button.ForegroundProperty, Brushes.Red);
+            rejectButtonFactory.SetValue(Button.WidthProperty, 80.0);
+
+            actionStackFactory.AppendChild(approveButtonFactory);
+            actionStackFactory.AppendChild(rejectButtonFactory);
+            actionTemplate.VisualTree = actionStackFactory;
+            actionColumn.CellTemplate = actionTemplate;
+            gridUnconfirmed.Columns.Add(actionColumn);
 
             leftPanel.Children.Add(confirmedLabel);
             leftPanel.Children.Add(gridConfirmed);
@@ -2728,7 +3136,6 @@ namespace WpfApp1
             leftPanel.Children.Add(gridUnconfirmed);
             Grid.SetColumn(leftPanel, 0);
 
-            // Правая панель (администраторы и завершенные курсы)
             var rightPanel = new StackPanel
             {
                 Width = 820,
@@ -2736,7 +3143,6 @@ namespace WpfApp1
                 Background = Brushes.WhiteSmoke,
             };
 
-            // Грид завершенных курсов
             var completedCoursesLabel = new Label
             {
                 Content = "Завершенные курсы",
@@ -2750,7 +3156,7 @@ namespace WpfApp1
                 FontSize = 14,
                 AutoGenerateColumns = false,
                 Width = 820,
-                Height = 200, // Уменьшенная высота
+                Height = 200, 
                 HorizontalAlignment = HorizontalAlignment.Left,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
                 Margin = new Thickness(0, 0, 0, 10),
@@ -2765,7 +3171,6 @@ namespace WpfApp1
             completedCoursesGrid.Columns.Add(new DataGridTextColumn() { Header = "Статус", Binding = new Binding("Status"), Width = 100, IsReadOnly = true });
             completedCoursesGrid.Columns.Add(new DataGridTextColumn() { Header = "Дата", Binding = new Binding("CompletionDate"), Width = 100, IsReadOnly = true });
 
-            // Форма создания администратора
             var adminFormLabel = new Label
             {
                 Content = "Создание администратора",
@@ -2778,7 +3183,7 @@ namespace WpfApp1
             {
                 Margin = new Thickness(5),
                 Background = Brushes.White,
-                Height = 200 // Уменьшенная высота
+                Height = 200 
             };
             adminFormPanel.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
             adminFormPanel.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
@@ -2918,7 +3323,12 @@ namespace WpfApp1
             LoadUsers();
             completedCoursesGrid.ItemsSource = GetCompletedCourses();
         }
-
+        /// <summary>
+        /// Загружает и отображает интерфейс управления курсами с сетками для курсов и партнеров.
+        /// Предоставляет функциональность для редактирования, удаления курсов и управления партнерами.
+        /// </summary>
+        /// <param name="sender">Кнопка курсов, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnCourses_Click(object sender, RoutedEventArgs e)
         {
             ShowBackButton();
@@ -3214,7 +3624,10 @@ namespace WpfApp1
             LoadCourses();
             LoadPartnersList();
         }
-
+        /// <summary>
+        /// Загружает данные курсов из базы данных и привязывает их к сетке курсов.
+        /// Включает связанную информацию о специальностях и партнерах.
+        /// </summary>
         private void LoadCourses()
         {
             try
@@ -3246,9 +3659,7 @@ namespace WpfApp1
                                     SpecialityId = reader.GetInt32(3),
                                     SpecialityName = !reader.IsDBNull(4) ? reader.GetString(4) : "",
                                     AvailabilityId = reader.IsDBNull(5) ? 0 : (reader.GetBoolean(5) ? 1 : 0),
-                                    // Для имени доступности используем строку на основе значения
                                     AvailabilityName = reader.IsDBNull(5) ? "Не указано" : (reader.GetBoolean(5) ? "Доступен" : "Не доступен"),
-                                    // Обработка NULL partnership
                                     PartnerId = reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
                                     PartnerName = !reader.IsDBNull(7) ? reader.GetString(7) : "",
                                     Specialities = GetSpecialities(),
@@ -3266,7 +3677,10 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при загрузке курсов: {ex.Message}\n{ex.StackTrace}");
             }
         }
-
+        /// <summary>
+        /// Получает данные о специальностях из базы данных для привязки к комбобоксу.
+        /// </summary>
+        /// <returns>Список динамических объектов, содержащих ID и названия специальностей.</returns>
         private List<dynamic> GetSpecialities()
         {
             var specialities = new List<dynamic>();
@@ -3294,7 +3708,9 @@ namespace WpfApp1
 
             return specialities;
         }
-
+        /// <summary>
+        /// Загружает новые учетные записи администраторов, ожидающие подтверждения, из базы данных.
+        /// </summary>
         private void LoadNewAdmins()
         {
             try
@@ -3324,7 +3740,6 @@ namespace WpfApp1
                     }
                 }
 
-                // Find the gridNewAdmins in the visual tree
                 var gridNewAdmins = FindVisualChild<DataGrid>(mainScrollViewer.Content as DependencyObject, "gridNewAdmins");
                 if (gridNewAdmins != null)
                 {
@@ -3336,7 +3751,11 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при загрузке новых администраторов: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Подтверждает учетную запись администратора, обновляя его статус в базе данных.
+        /// </summary>
+        /// <param name="sender">Кнопка подтверждения, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ConfirmAdmin_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is int adminId)
@@ -3365,7 +3784,10 @@ namespace WpfApp1
             }
         }
 
-
+        /// <summary>
+        /// Получает данные о партнерах из базы данных для привязки к комбобоксу.
+        /// </summary>
+        /// <returns>Список динамических объектов, содержащих ID и названия партнеров.</returns>
         private List<dynamic> GetPartners()
         {
             var partners = new List<dynamic>();
@@ -3393,7 +3815,12 @@ namespace WpfApp1
 
             return partners;
         }
-
+        /// <summary>
+        /// Загружает данные в комбобоксы для редактирования курса (специальности, доступность, партнеры).
+        /// </summary>
+        /// <param name="specialityComboBox">Комбобокс для выбора специальности.</param>
+        /// <param name="availabilityComboBox">Комбобокс для статуса доступности.</param>
+        /// <param name="partnerComboBox">Комбобокс для выбора партнера.</param>
         private void LoadComboBoxData(ComboBox specialityComboBox, ComboBox availabilityComboBox, ComboBox partnerComboBox)
         {
             var specialities = GetSpecialities();
@@ -3414,7 +3841,13 @@ namespace WpfApp1
             partnerComboBox.DisplayMemberPath = "Name";
             partnerComboBox.SelectedValuePath = "Id";
         }
-
+        /// <summary>
+        /// Добавляет новый курс в базу данных с указанными параметрами.
+        /// </summary>
+        /// <param name="name">Название нового курса.</param>
+        /// <param name="specialityId">ID специальности, связанной с курсом.</param>
+        /// <param name="availabilityId">ID статуса доступности для курса.</param>
+        /// <param name="partnerId">ID партнерской организации, связанной с курсом.</param>
         private void AddCourse(string name, int? specialityId, int? availabilityId, int? partnerId)
         {
             if (string.IsNullOrEmpty(name) || !specialityId.HasValue || !availabilityId.HasValue || !partnerId.HasValue)
@@ -3461,16 +3894,17 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка подключения: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Сохраняет изменения текущего выбранного курса в базе данных.
+        /// Обрабатывает обновления названия, описания, специальности, доступности и информации о партнере.
+        /// </summary>
+        /// <param name="sender">Кнопка сохранения, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void SaveCourse_Click(object sender, RoutedEventArgs e)
         {
-            if (gridCourses.SelectedItem == null)
-            {
-                MessageBox.Show("Выберите курс для сохранения");
-                return;
-            }
+            if (gridCourses.SelectedItem == null) return;
 
-            gridCourses.CommitEdit(DataGridEditingUnit.Row, true);
+            gridCourses.CommitEdit(); 
 
             var course = gridCourses.SelectedItem as Course;
             if (course == null) return;
@@ -3492,28 +3926,40 @@ namespace WpfApp1
                     using (var command = new SQLiteCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@name", course.Name);
-                        command.Parameters.AddWithValue("@description", string.IsNullOrEmpty(course.Description) ?
-                            (object)DBNull.Value : course.Description);
+                        command.Parameters.AddWithValue("@description",
+                            string.IsNullOrEmpty(course.Description) ? (object)DBNull.Value : course.Description);
                         command.Parameters.AddWithValue("@speciality", course.SpecialityId);
                         command.Parameters.AddWithValue("@availability", course.AvailabilityId == 1);
-                        command.Parameters.AddWithValue("@availableUntil", course.AvailableUntil.HasValue ?
-                            (object)course.AvailableUntil.Value : DBNull.Value);
-                        command.Parameters.AddWithValue("@partnership", course.PartnerId > 0 ?
-                            (object)course.PartnerId : DBNull.Value);
-                        command.Parameters.AddWithValue("@id", course.Id); // Используем course.Id
 
-                        int rowsAffected = command.ExecuteNonQuery();
-                        MessageBox.Show(rowsAffected > 0 ? "Сохранено!" : "Ошибка сохранения");
-                        LoadCourses();
+                        if (course.AvailableUntil.HasValue)
+                        {
+                            command.Parameters.AddWithValue("@availableUntil", course.AvailableUntil.Value);
+                        }
+                        else
+                        {
+                            command.Parameters.AddWithValue("@availableUntil", DBNull.Value);
+                        }
+
+                        command.Parameters.AddWithValue("@partnership",
+                            course.PartnerId > 0 ? (object)course.PartnerId : DBNull.Value);
+                        command.Parameters.AddWithValue("@id", course.Id);
+
+                        command.ExecuteNonQuery();
+                        MessageBox.Show("Изменения сохранены!");
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка: {ex.Message}\n\n{ex.StackTrace}");
+                MessageBox.Show($"Ошибка при сохранении: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Удаляет выбранный курс из базы данных после подтверждения.
+        /// Удаляет все связанные данные, включая модули, элементы и ассоциации пользователей.
+        /// </summary>
+        /// <param name="sender">Кнопка удаления, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DeleteCourse_Click(object sender, RoutedEventArgs e)
         {
             if (gridCourses.SelectedItem == null)
@@ -3542,7 +3988,6 @@ namespace WpfApp1
                         {
                             try
                             {
-                                // 1. Удаляем тесты и связанные данные
                                 string deleteTestAnswersQuery = @"
                             DELETE FROM test_answers 
                             WHERE question_id IN (
@@ -3573,7 +4018,6 @@ namespace WpfApp1
                             )";
                                 ExecuteDeleteQuery(connection, transaction, deleteTestsQuery, course.Id, "@courseId");
 
-                                // 2. Удаляем элементы модулей
                                 string deleteModuleItemsQuery = @"
                             DELETE FROM module_items 
                             WHERE module_id IN (
@@ -3581,15 +4025,12 @@ namespace WpfApp1
                             )";
                                 ExecuteDeleteQuery(connection, transaction, deleteModuleItemsQuery, course.Id, "@courseId");
 
-                                // 3. Удаляем модули
                                 string deleteModulesQuery = "DELETE FROM modules WHERE course_id = @courseId";
                                 ExecuteDeleteQuery(connection, transaction, deleteModulesQuery, course.Id, "@courseId");
 
-                                // 4. Удаляем связи пользователей с курсом
                                 string deleteUserCoursesQuery = "DELETE FROM userscourses WHERE course = @courseId";
                                 ExecuteDeleteQuery(connection, transaction, deleteUserCoursesQuery, course.Id, "@courseId");
 
-                                // 5. Удаляем сам курс
                                 string deleteCourseQuery = "DELETE FROM courses WHERE id = @courseId";
                                 ExecuteDeleteQuery(connection, transaction, deleteCourseQuery, course.Id, "@courseId");
 
@@ -3611,6 +4052,14 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Выполняет запрос на удаление в рамках транзакции для операций удаления курсов.
+        /// </summary>
+        /// <param name="connection">Активное подключение к базе данных.</param>
+        /// <param name="transaction">Текущая транзакция базы данных.</param>
+        /// <param name="query">Запрос на удаление для выполнения.</param>
+        /// <param name="parameterValue">Значение параметра запроса.</param>
+        /// <param name="parameterName">Имя параметра запроса.</param>
         private void ExecuteDeleteQuery(SQLiteConnection connection, SQLiteTransaction transaction, string query, int parameterValue, string parameterName)
         {
             using (var command = new SQLiteCommand(query, connection, transaction))
@@ -3619,6 +4068,10 @@ namespace WpfApp1
                 command.ExecuteNonQuery();
             }
         }
+        /// <summary>
+        /// Добавляет новую партнерскую организацию в базу данных.
+        /// </summary>
+        /// <param name="name">Название новой партнерской организации.</param>
         private void AddPartner(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -3647,12 +4100,19 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при добавлении партнера: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Добавляет новый элемент в модуль курса в базе данных.
+        /// </summary>
+        /// <param name="moduleId">ID модуля для добавления элемента.</param>
+        /// <param name="itemType">Тип нового элемента (лекция, видео, тест).</param>
+        /// <param name="title">Название нового элемента.</param>
+        /// <param name="contentPath">Путь к файлу контента элемента.</param>
+        /// <param name="externalUrl">Внешний URL для элемента, если применимо.</param>
+        /// <param name="durationMinutes">Длительность в минутах для видео-элементов.</param>
         private void AddModuleItem(int moduleId, string itemType, string title, string contentPath, string externalUrl, int? durationMinutes)
         {
             try
             {
-                // Получаем следующий order_index
                 int orderIndex = 1;
                 var existingItems = GetModuleItemsByModuleId(moduleId);
                 if (existingItems.Any())
@@ -3688,7 +4148,12 @@ namespace WpfApp1
                 throw;
             }
         }
-
+        /// <summary>
+        /// Находит родительский элемент указанного типа в визуальном дереве.
+        /// </summary>
+        /// <typeparam name="T">Тип искомого родительского элемента.</typeparam>
+        /// <param name="child">Дочерний элемент, с которого начинается поиск.</param>
+        /// <returns>Родительский элемент, если найден, иначе null.</returns>
         private static T FindParent<T>(DependencyObject child) where T : DependencyObject
         {
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);
@@ -3696,13 +4161,21 @@ namespace WpfApp1
             T parent = parentObject as T;
             return parent ?? FindParent<T>(parentObject);
         }
-
+        /// <summary>
+        /// Возвращает к основному представлению контента и скрывает кнопку "Назад".
+        /// </summary>
+        /// <param name="sender">Кнопка "Назад", которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnBack_Click(object sender, RoutedEventArgs e)
         {
             mainScrollViewer.Content = originalContent;
             btnBack.Visibility = Visibility.Collapsed;
         }
-
+        /// <summary>
+        /// Выходит из панели администратора и возвращается в главное окно приложения.
+        /// </summary>
+        /// <param name="sender">Кнопка выхода, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             Window mainWindow = new MainWindow();
@@ -3710,7 +4183,11 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Возвращает к главному представлению панели администратора.
+        /// </summary>
+        /// <param name="sender">Кнопка "Главная", которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             Window main = new AdminControl(_isAdmin, _userId);
@@ -3718,7 +4195,9 @@ namespace WpfApp1
             main.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Делает кнопку "Назад" видимой в интерфейсе.
+        /// </summary>
         private void ShowBackButton()
         {
             if (btnBack != null)
@@ -3727,6 +4206,9 @@ namespace WpfApp1
             }
         }
 
+        /// <summary>
+        /// Загружает данные о партнерах из базы данных и привязывает их к сетке партнеров.
+        /// </summary>
         private void LoadPartnersList()
         {
             try
@@ -3761,7 +4243,12 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при загрузке партнеров: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Удаляет партнерскую организацию из базы данных после подтверждения.
+        /// Проверяет существующие ассоциации курсов перед разрешением удаления.
+        /// </summary>
+        /// <param name="sender">Кнопка удаления, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void DeletePartner_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int partnerId)) return;
@@ -3823,7 +4310,9 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при удалении партнера: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Представляет обращение в поддержку со всей соответствующей информацией и статусом.
+        /// </summary>
         public class Appeal
         {
             public int Id { get; set; }
@@ -3841,7 +4330,9 @@ namespace WpfApp1
             [DisplayFormat(DataFormatString = "{0:dd.MM.yyyy HH:mm}")]
             public DateTime? ResponseDate { get; set; }
         }
-
+        /// <summary>
+        /// Представляет вложение к обращению в поддержку с данными файла и метаданными.
+        /// </summary>
         public class AppealAttachment
         {
             public int Id { get; set; }
@@ -3856,7 +4347,9 @@ namespace WpfApp1
         private DataGrid gridAttachments;
         private TextBox responseTextBox;
         private ComboBox appealsComboBox;
-
+        /// <summary>
+        /// Загружает данные обращений из базы данных и разделяет их на активные и архивные сетки.
+        /// </summary>
         private void LoadAppeals()
         {
             try
@@ -3889,7 +4382,6 @@ namespace WpfApp1
                         }
                     }
 
-                    // Загрузка архивных обращений
                     string archivedQuery = @"SELECT a.id, a.text, a.computername, a.user_email, a.created_at, a.userId, 
                                   ar.response, ar.response_date 
                                   FROM appeals a 
@@ -3924,7 +4416,13 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при загрузке обращений: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Обработчик нажатия кнопки "Обработка обращений"
+        /// Отображает административную панель с активными и архивными обращениями,
+        /// интерфейсом ответа и возможностью просмотра вложений
+        /// </summary>
+        /// <param name="sender">Источник события (кнопка)</param>
+        /// <param name="e">Аргументы события нажатия</param>
         private void btnProcessing_Click(object sender, RoutedEventArgs e)
         {
             ShowBackButton();
@@ -4005,7 +4503,6 @@ namespace WpfApp1
             gridActiveAppeals.Columns.Add(new DataGridTextColumn() { Header = "Email", Binding = new Binding("UserEmail"), Width = 150, IsReadOnly = true });
             gridActiveAppeals.Columns.Add(new DataGridTextColumn() { Header = "Дата", Binding = new Binding("CreatedAt"), Width = 120, IsReadOnly = true });
 
-            // Добавляем колонку для приложений
             var activeAttachmentsColumn = new DataGridTemplateColumn()
             {
                 Header = "Приложения",
@@ -4104,7 +4601,6 @@ namespace WpfApp1
             gridArchivedAppeals.Columns.Add(new DataGridTextColumn() { Header = "Дата обращения", Binding = new Binding("CreatedAt"), Width = 120, IsReadOnly = true });
             gridArchivedAppeals.Columns.Add(new DataGridTextColumn() { Header = "Дата ответа", Binding = new Binding("ResponseDate"), Width = 120, IsReadOnly = true });
 
-            // Добавляем колонку для приложений
             var archivedAttachmentsColumn = new DataGridTemplateColumn()
             {
                 Header = "Приложения",
@@ -4145,7 +4641,11 @@ namespace WpfApp1
             mainScrollViewer.Content = outerScrollViewer;
             LoadAppeals();
         }
-
+        /// <summary>
+        /// Отображает вложения для конкретного обращения в новом окне.
+        /// </summary>
+        /// <param name="sender">Кнопка просмотра вложений, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void ShowAttachments_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int appealId)) return;
@@ -4191,7 +4691,11 @@ namespace WpfApp1
             window.Content = dataGrid;
             window.ShowDialog();
         }
-
+        /// <summary>
+        /// Получает все вложения для конкретного обращения из базы данных.
+        /// </summary>
+        /// <param name="appealId">ID обращения для получения вложений.</param>
+        /// <returns>Список объектов AppealAttachment для указанного обращения.</returns>
         private List<AppealAttachment> GetAppealAttachments(int appealId)
         {
             var attachments = new List<AppealAttachment>();
@@ -4223,7 +4727,12 @@ namespace WpfApp1
 
             return attachments;
         }
-
+        /// <summary>
+        /// Отправляет ответ на активное обращение, перемещая его в архивный список.
+        /// Обрабатывает обновления базы данных и email-уведомления отправителю обращения.
+        /// </summary>
+        /// <param name="sender">Кнопка отправки ответа, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void SendResponseButton_Click(object sender, RoutedEventArgs e)
         {
             if (gridActiveAppeals.SelectedItem == null)
@@ -4251,7 +4760,6 @@ namespace WpfApp1
                     {
                         try
                         {
-                            // Сохраняем ответ
                             string query = "INSERT INTO appeal_responses (appeal_id, response, response_date) VALUES (@appealId, @response, @responseDate)";
                             using (var command = new SQLiteCommand(query, connection, transaction))
                             {
@@ -4261,7 +4769,6 @@ namespace WpfApp1
                                 command.ExecuteNonQuery();
                             }
 
-                            // Отправка email
                             if (!string.IsNullOrEmpty(selectedAppeal.UserEmail))
                             {
                                 SendEmailResponse(selectedAppeal.UserEmail, responseText);
@@ -4270,7 +4777,7 @@ namespace WpfApp1
                             transaction.Commit();
                             MessageBox.Show("Ответ успешно отправлен");
                             responseTextBox.Text = "";
-                            LoadAppeals(); // Обновляем списки
+                            LoadAppeals(); 
                         }
                         catch (Exception ex)
                         {
@@ -4285,7 +4792,11 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Открывает вложение обращения в программе по умолчанию после сохранения во временный файл.
+        /// </summary>
+        /// <param name="sender">Кнопка открытия, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void OpenAttachment_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is Button button) || !(button.Tag is int attachmentId)) return;
@@ -4322,11 +4833,9 @@ namespace WpfApp1
                     return;
                 }
 
-                // Создаем временный файл
                 string tempFilePath = Path.Combine(Path.GetTempPath(), attachment.FileName);
                 File.WriteAllBytes(tempFilePath, attachment.FileData);
 
-                // Открываем файл с помощью ассоциированной программы
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = tempFilePath,
@@ -4338,7 +4847,11 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка при открытии файла: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Отправляет email-ответ отправителю обращения с ответом администратора.
+        /// </summary>
+        /// <param name="email">Email-адрес получателя.</param>
+        /// <param name="responseText">Текст ответа для отправки.</param>
         private void SendEmailResponse(string email, string responseText)
         {
             try
@@ -4369,7 +4882,12 @@ namespace WpfApp1
                     "Ошибка отправки", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-
+        /// <summary>
+        /// Находит визуальные дочерние элементы указанного типа в родительском элементе.
+        /// </summary>
+        /// <typeparam name="T">Тип искомых дочерних элементов.</typeparam>
+        /// <param name="depObj">Родительский элемент для поиска.</param>
+        /// <returns>Коллекцию соответствующих дочерних элементов.</returns>
         private IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
         {
             if (depObj != null)
@@ -4389,6 +4907,10 @@ namespace WpfApp1
                 }
             }
         }
+        /// <summary>
+        /// Получает завершенные курсы с информацией о пользователях из базы данных.
+        /// </summary>
+        /// <returns>Список объектов CourseUser, представляющих завершенные курсы.</returns>
         private List<CourseUser> GetCompletedCourses()
         {
             var completedCourses = new List<CourseUser>();
@@ -4402,7 +4924,7 @@ namespace WpfApp1
                 JOIN users u ON uc.user = u.id
                 LEFT JOIN courses c ON uc.course = c.id
                 LEFT JOIN statuses s ON uc.status = s.id
-                WHERE uc.status = 2"; // Фильтр по статусу "Завершено" (2)
+                WHERE uc.status = 2";
 
                 using (var command = new SQLiteCommand(query, connection))
                 {
@@ -4427,6 +4949,11 @@ namespace WpfApp1
 
             return completedCourses;
         }
+        /// <summary>
+        /// Переходит в окно личного кабинета.
+        /// </summary>
+        /// <param name="sender">Кнопка кабинета, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             Window account = new Personal_Account(_isAdmin, _userId);
@@ -4434,6 +4961,11 @@ namespace WpfApp1
             account.Show();
             this.Close();
         }
+        /// <summary>
+        /// Переходит в окно панели администратора.
+        /// </summary>
+        /// <param name="sender">Кнопка администратора, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnAdmin_Click(object sender, RoutedEventArgs e)
         {
             Window admin = new AdminControl(_isAdmin, _userId);
@@ -4441,7 +4973,11 @@ namespace WpfApp1
             admin.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Переходит в окно часто задаваемых вопросов.
+        /// </summary>
+        /// <param name="sender">Кнопка FAQ, которая была нажата.</param>
+        /// <param name="e">Аргументы события.</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(_isAdmin, _userId);
@@ -4449,6 +4985,11 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
+        /// <summary>
+        /// Получает данные теста для конкретного элемента модуля из базы данных.
+        /// </summary>
+        /// <param name="moduleItemId">ID элемента модуля, содержащего тест.</param>
+        /// <returns>Объект Test, если найден, иначе null.</returns>
         private Test GetTestByModuleItemId(int moduleItemId)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -4478,14 +5019,17 @@ namespace WpfApp1
             }
             return null;
         }
-
+        /// <summary>
+        /// Получает все вопросы для конкретного теста из базы данных.
+        /// </summary>
+        /// <param name="testId">ID теста для получения вопросов.</param>
+        /// <returns>Список объектов TestQuestion для указанного теста.</returns>
         private List<TestQuestion> GetTestQuestions(int testId)
         {
             var questions = new List<TestQuestion>();
             using (var connection = new SQLiteConnection(ConnectionString))
             {
                 connection.Open();
-                // Убедитесь, что используете question_text вместо text
                 string query = "SELECT id, question_text, question_type, points FROM test_questions WHERE test_id = @testId";
 
                 using (var command = new SQLiteCommand(query, connection))
@@ -4498,9 +5042,9 @@ namespace WpfApp1
                             questions.Add(new TestQuestion
                             {
                                 Id = reader.GetInt32(0),
-                                Text = reader.GetString(1),  // Соответствует question_text
-                                Type = reader.GetString(2),   // Соответствует question_type
-                                Points = reader.GetInt32(3)   // Соответствует points
+                                Text = reader.GetString(1),  
+                                Type = reader.GetString(2),   
+                                Points = reader.GetInt32(3)   
                             });
                         }
                     }
@@ -4508,13 +5052,17 @@ namespace WpfApp1
             }
             return questions;
         }
+        /// <summary>
+        /// Получает все ответы для конкретного вопроса теста из базы данных.
+        /// </summary>
+        /// <param name="questionId">ID вопроса для получения ответов.</param>
+        /// <returns>Список объектов TestAnswer для указанного вопроса.</returns>
         private List<TestAnswer> GetTestAnswers(int questionId)
         {
             var answers = new List<TestAnswer>();
             using (var connection = new SQLiteConnection(ConnectionString))
             {
                 connection.Open();
-                // Убедитесь, что используете answer_text вместо text
                 string query = "SELECT id, answer_text, is_correct FROM test_answers WHERE question_id = @questionId";
 
                 using (var command = new SQLiteCommand(query, connection))
@@ -4527,8 +5075,8 @@ namespace WpfApp1
                             answers.Add(new TestAnswer
                             {
                                 Id = reader.GetInt32(0),
-                                Text = reader.GetString(1),      // Соответствует answer_text
-                                IsCorrect = reader.GetBoolean(2) // Соответствует is_correct
+                                Text = reader.GetString(1),     
+                                IsCorrect = reader.GetBoolean(2) 
                             });
                         }
                     }
@@ -4536,21 +5084,28 @@ namespace WpfApp1
             }
             return answers;
         }
+        /// <summary>
+        /// Представляет тест с базовой идентификационной и оценочной информацией.
+        /// </summary>
         public class Test
         {
             public int Id { get; set; }
             public string Title { get; set; }
             public int TotalPoints { get; set; }
         }
-
+        /// <summary>
+        /// Представляет вопрос теста с текстом, типом и оценочной информацией.
+        /// </summary>
         public class TestQuestion
         {
             public int Id { get; set; }
-            public string Text { get; set; }  // Должно соответствовать question_text
-            public string Type { get; set; }  // Должно соответствовать question_type
+            public string Text { get; set; } 
+            public string Type { get; set; }  
             public int Points { get; set; }
         }
-
+        /// <summary>
+        /// Представляет возможный ответ на вопрос теста с флагом правильности.
+        /// </summary>
         public class TestAnswer
         {
             public int Id { get; set; }
@@ -4558,6 +5113,11 @@ namespace WpfApp1
             public bool IsCorrect { get; set; }
         }
     }
+
+    /// <summary>
+    /// Представляет редактируемый вопрос теста с уведомлениями об изменении свойств.
+    /// Включает текст вопроса, тип, значение баллов и коллекцию возможных ответов.
+    /// </summary>
     public class EditTestQuestion : INotifyPropertyChanged
     {
         private int _id;
@@ -4648,7 +5208,10 @@ namespace WpfApp1
             }
         }
     }
-
+    /// <summary>
+    /// Представляет редактируемый ответ на вопрос теста с уведомлениями об изменении свойств.
+    /// Включает текст ответа и флаг правильности.
+    /// </summary>
     public class EditTestAnswer : INotifyPropertyChanged
     {
         private int _id;
@@ -4680,16 +5243,22 @@ namespace WpfApp1
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
+    /// <summary>
+    /// Представляет завершение пользователем курса с сопутствующей информацией.
+    /// </summary>
     public class CourseUser
     {
         public int Id { get; set; }
-        public string UserLogin { get; set; } // Добавлено новое свойство
+        public string UserLogin { get; set; }
         public string UserName { get; set; }
         public string CourseName { get; set; }
         public string Status { get; set; }
         public string CompletionDate { get; set; }
         public int? CertificateId { get; set; }
     }
+    /// <summary>
+    /// Представляет элемент модуля при редактировании со всеми редактируемыми свойствами.
+    /// </summary>
     public class EditModuleItem
     {
         public int Id { get; set; }

@@ -13,6 +13,12 @@ namespace WpfApp1
 
         public int _userId;
         public bool _isAdmin;
+        /// <summary>
+        /// Конструктор окна "Часто задаваемые вопросы".
+        /// Учитывает роль пользователя и настраивает видимость элементов интерфейса.
+        /// </summary>
+        /// <param name="isAdmin">Флаг, указывающий, является ли пользователь администратором</param>
+        /// <param name="userId">Идентификатор пользователя</param>
         public FAQs(bool isAdmin, int userId)
         {
             InitializeComponent();
@@ -66,6 +72,10 @@ namespace WpfApp1
                 Answer = "Вы можете написать в службу поддержки через кнопку меню 'Служба Поддержки' или кнопку 'Обратиться в службу поддержки' ниже. Заполните форму и отправите ваш запрос."
             }
         };
+        /// <summary>
+        /// Создает визуальные элементы FAQ на основе заранее заданного списка вопросов и ответов.
+        /// Устанавливает стили и обработчики событий для раскрытия ответов.
+        /// </summary>
         private void CreateFAQItems()
         {
             foreach (var item in _faqItems)
@@ -133,6 +143,11 @@ namespace WpfApp1
                 FAQPanel.Children.Add(faqGrid);
             }
         }
+        /// <summary>
+        /// Копирует свойства текущего окна (размер, позиция, состояние) в следующее окно.
+        /// Используется для плавного перехода между окнами без изменения их внешнего вида.
+        /// </summary>
+        /// <param name="nextWindow">Окно, в которое копируются свойства</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -141,6 +156,12 @@ namespace WpfApp1
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
+        /// <summary>
+        /// Обработчик кнопки перехода на главное окно.
+        /// В зависимости от наличия авторизации открывает либо Main, либо MainWindow.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             if (_userId != -1)
@@ -158,7 +179,12 @@ namespace WpfApp1
                 this.Close();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки повторного открытия окна FAQ.
+        /// Перезапускает окно с сохранением позиции и состояния.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(_isAdmin, _userId);
@@ -166,7 +192,12 @@ namespace WpfApp1
             faqs.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода в окно поддержки.
+        /// Открывает окно поддержки и закрывает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(_isAdmin, _userId);
@@ -174,6 +205,13 @@ namespace WpfApp1
             support.Show();
             this.Close();
         }
+
+        /// <summary>
+        /// Обработчик кнопки перехода в окно администратора.
+        /// Открывает административный интерфейс при наличии прав.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAdmin_Click(object sender, RoutedEventArgs e)
         {
             Window admin = new AdminControl(_isAdmin, _userId);
@@ -181,7 +219,12 @@ namespace WpfApp1
             admin.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки перехода в личный кабинет.
+        /// Проверяет авторизацию пользователя, иначе показывает сообщение об ошибке.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             if (_userId == -1)
@@ -201,6 +244,12 @@ namespace WpfApp1
                 this.Close();
             }
         }
+        /// <summary>
+        /// Обработчик кнопки выхода.
+        /// Открывает главное окно и завершает текущее.
+        /// </summary>
+        /// <param name="sender">Источник события</param>
+        /// <param name="e">Аргументы события</param>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();
@@ -208,6 +257,10 @@ namespace WpfApp1
             mainWindow.Show();
             this.Close();
         }
+        /// <summary>
+        /// Класс модели данных для одного элемента FAQ.
+        /// Содержит вопрос и соответствующий ответ.
+        /// </summary>
         public class FAQItem
         {
             public string Question { get; set; }

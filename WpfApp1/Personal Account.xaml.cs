@@ -18,7 +18,11 @@ namespace WpfApp1
         public bool authorized = true;
         private static readonly string ConnectionString =
             $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "educatingsystem.sl3")};Version=3;";
-
+        /// <summary>
+        /// Конструктор окна личного кабинета пользователя.
+        /// Инициализирует компоненты и настраивает отображение элементов в зависимости от роли (админ или пользователь).
+        /// Также загружает информацию о пользователе, его курсах и сертификатах.
+        /// </summary>
         public Personal_Account(bool isAdmin, int userId)
         {
             InitializeComponent(); 
@@ -59,6 +63,10 @@ namespace WpfApp1
             LoadUserCourses();
             LoadUserCertificates();
         }
+        /// <summary>
+        /// Метод-обработчик события обновления доступности курсов.
+        /// Вызывает всплывающее окно с уведомлением.
+        /// </summary>
         private void OnCoursesAvailabilityUpdated()
         {
             Dispatcher.Invoke(() =>
@@ -69,6 +77,9 @@ namespace WpfApp1
                               MessageBoxImage.Information);
             });
         }
+        /// <summary>
+        /// Загружает информацию о пользователе из базы данных и отображает её в интерфейсе.
+        /// </summary>
         private void LoadUserInfo()
         {
             try
@@ -111,7 +122,11 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка загрузки информации о пользователе: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Получает название специальности по её идентификатору из базы данных.
+        /// </summary>
+        /// <param name="specialityId">Идентификатор специальности</param>
+        /// <returns>Название специальности</returns>
         private string GetSpecialityName(int specialityId)
         {
             try
@@ -134,10 +149,12 @@ namespace WpfApp1
                 return "Ошибка загрузки";
             }
         }
-
+        /// <summary>
+        /// Загружает список курсов пользователя (начатые и завершённые) и передаёт их для отображения.
+        /// </summary>
         private void LoadUserCourses()
         {
-            if (_isAdmin) return; // Пропускаем загрузку для администратора
+            if (_isAdmin) return; 
 
             try
             {
@@ -153,7 +170,9 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка загрузки курсов пользователя: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Загружает список сертификатов пользователя из базы данных и отображает их в интерфейсе.
+        /// </summary>
         private void LoadUserCertificates()
         {
 
@@ -191,7 +210,7 @@ namespace WpfApp1
                                     Width = 300,
                                     Height = 100,
                                     Cursor = Cursors.Hand,
-                                    Tag = reader.GetValue(2) // Store PDF data in Tag
+                                    Tag = reader.GetValue(2)
                                 };
 
                                 var content = new StackPanel();
@@ -246,7 +265,10 @@ namespace WpfApp1
                 MessageBox.Show($"Ошибка загрузки сертификатов: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// Обработчик клика по карточке сертификата.
+        /// Позволяет сохранить PDF-файл сертификата на диск.
+        /// </summary>
         private void CertificateCard_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is Border border && border.Tag is byte[] pdfData)
@@ -271,7 +293,11 @@ namespace WpfApp1
                 }
             }
         }
-
+        /// <summary>
+        /// Получает список курсов пользователя из базы данных, включая статус и информацию об удалении.
+        /// </summary>
+        /// <param name="userId">Идентификатор пользователя</param>
+        /// <returns>Список курсов</returns>
         private List<UserCourse> GetUserCourses(int userId)
         {
             var courses = new List<UserCourse>();
@@ -296,7 +322,7 @@ JOIN
     statuses s ON uc.status = s.id
 WHERE 
     uc.user = @userId
-ORDER BY uc.id DESC";  // Сортировка по ID в обратном порядке
+ORDER BY uc.id DESC"; 
 
                 using (var command = new SQLiteCommand(query, connection))
                 {
@@ -323,6 +349,12 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
 
             return courses;
         }
+        /// <summary>
+        /// Отображает курсы на переданной панели, создавая карточки для каждого курса.
+        /// </summary>
+        /// <param name="courses">Список курсов</param>
+        /// <param name="panel">UI-панель для отображения</param>
+        /// <param name="headerText">Заголовок (не используется напрямую)</param>
         private void LoadCoursesToPanel(List<UserCourse> courses, StackPanel panel, string headerText)
         {
             panel.Children.Clear();
@@ -401,7 +433,10 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
                 panel.Children.Add(noCoursesText);
             }
         }
-
+        /// <summary>
+        /// Открывает окно курса и закрывает текущее окно.
+        /// </summary>
+        /// <param name="courseId">Идентификатор курса</param>
         private void OpenCourseWindow(int courseId)
         {
             Window course = new Course(courseId, _userId, _isAdmin);
@@ -409,7 +444,10 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
             course.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Применяет текущие параметры окна (размер, позиция и т.п.) к новому окну.
+        /// </summary>
+        /// <param name="nextWindow">Окно, к которому применяются параметры</param>
         private void WindowProperties(Window nextWindow)
         {
             nextWindow.Left = this.Left;
@@ -418,7 +456,9 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
             nextWindow.Width = this.Width;
             nextWindow.WindowState = this.WindowState;
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Главная". Открывает главное окно и закрывает текущее.
+        /// </summary>
         private void btnMain_Click(object sender, RoutedEventArgs e)
         {
             if (_userId != -1)
@@ -436,7 +476,9 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
                 this.Close();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Вопросы и ответы". Открывает окно FAQ.
+        /// </summary>
         private void btnFAQs_Click(object sender, RoutedEventArgs e)
         {
             Window faqs = new FAQs(_isAdmin, _userId);
@@ -444,7 +486,9 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
             faqs.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Поддержка". Открывает окно поддержки.
+        /// </summary>
         private void btnSupport_Click(object sender, RoutedEventArgs e)
         {
             Window support = new Support(_isAdmin, _userId);
@@ -452,7 +496,9 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
             support.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Администрирование". Открывает окно панели администратора.
+        /// </summary>
         private void btnAdmin_Click(object sender, RoutedEventArgs e)
         {
             Window admin = new AdminControl(_isAdmin, _userId);
@@ -460,7 +506,13 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
             admin.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Проверяет правильность текущего пароля пользователя.
+        /// </summary>
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="password">Введённый пароль</param>
+        /// <param name="isAdmin">Флаг администратора</param>
+        /// <returns>True, если пароль верный</returns>
         private bool CheckCurrentPassword(int userId, string password, bool isAdmin)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
@@ -483,7 +535,10 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
                 }
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Сменить пароль".
+        /// Проверяет текущий пароль и открывает окно смены пароля при успешной проверке.
+        /// </summary>
         private void btnChange_Click(object sender, RoutedEventArgs e)
         {
             string currentPassword = boxPassword.Password;
@@ -508,7 +563,9 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
                 boxPassword.Focus();
             }
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Выход". Открывает главное окно и завершает текущую сессию.
+        /// </summary>
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();
@@ -516,7 +573,9 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
             mainWindow.Show();
             this.Close();
         }
-
+        /// <summary>
+        /// Обработчик кнопки "Аккаунт". Повторно открывает окно личного кабинета.
+        /// </summary>
         private void btnAccount_Click(object sender, RoutedEventArgs e)
         {
             Window account = new Personal_Account(_isAdmin, _userId);
@@ -525,7 +584,10 @@ ORDER BY uc.id DESC";  // Сортировка по ID в обратном по�
             this.Close();
         }
     }
-
+    /// <summary>
+    /// Класс UserCourse представляет курс, связанный с пользователем:
+    /// содержит идентификатор, название, статус, строковое представление статуса и признак удаления
+    /// </summary>
     public class UserCourse
     {
         public int Id { get; set; }

@@ -51,7 +51,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header with navigation buttons -->
         <Grid Grid.Row="0" Panel.ZIndex="1">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -89,16 +88,13 @@
             </Grid>
         </Grid>
 
-        <!-- Main content area -->
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20" HorizontalAlignment="Center">
-                <!-- Title -->
                 <Label Content="Служба поддержки" 
                        FontSize="36" 
                        HorizontalAlignment="Center" 
                        Margin="0,20,0,30"/>
 
-                <!-- Appeal text -->
                 <Label Content="Обращение:" 
                        FontSize="28" 
                        Margin="0,0,0,10" Width="165"/>
@@ -109,7 +105,6 @@
                          Width="1014"
                          Margin="0,0,0,30"/>
 
-                <!-- Attachments -->
                 <Label Content="Прикрепить файлы (jpg, png, docx, pdf, txt, до 5 файлов):" 
                        FontSize="20" 
                        Margin="0,0,0,10" Width="530"/>
@@ -127,7 +122,6 @@
                             Visibility="Collapsed"/>
                 </StackPanel>
 
-                <!-- Attachments list -->
                 <ItemsControl x:Name="attachmentsContainer" 
                              HorizontalAlignment="Center" 
                              Margin="0,0,0,30" 
@@ -167,7 +161,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Email section -->
                 <StackPanel Orientation="Vertical" 
                             HorizontalAlignment="Center" 
                             Margin="0,0,0,20">
@@ -187,13 +180,11 @@
                               Margin="0,10,0,0"/>
                 </StackPanel>
 
-                <!-- Anonymous notice -->
                 <Label Content="Все обращения анонимны" 
                        FontSize="20" 
                        HorizontalAlignment="Center" 
                        Margin="0,0,0,30"/>
 
-                <!-- Submit button -->
                 <Button x:Name="btnSend" 
                         Content="Отправить" 
                         FontSize="36" 
@@ -203,7 +194,6 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Exit button -->
         <Button x:Name="btnExit" 
                 Content="Выйти" 
                 Style="{StaticResource BottomButtonStyle}"

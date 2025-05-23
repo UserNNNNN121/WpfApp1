@@ -9,10 +9,16 @@ using System.Windows;
 namespace WpfApp1
 {
     /// <summary>
-    /// Логика взаимодействия для App.xaml
+    /// Главный класс приложения WPF.
+    /// Наследуется от Application и управляет жизненным циклом приложения.
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// Метод, вызываемый при запуске приложения.
+        /// Инициализирует менеджер доступности курсов.
+        /// </summary>
+        /// <param name="e">Аргументы запуска приложения</param>
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
